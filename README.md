@@ -1,2 +1,2 @@
 # mindmath
-Juego matemático origen colombiano
+Juego matemático de origen colombiano

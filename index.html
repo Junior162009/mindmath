@@ -1,148 +1,696 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Arcade Infantil</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MindMath — Arcade Infantil (Completo)</title>
 <style>
-  body { margin:0; font-family:sans-serif; background:#f0f9ff; }
-  #loading { display:flex; align-items:center; justify-content:center; height:100vh; font-size:2em; animation: blink 1s infinite; }
-  @keyframes blink { 50%{opacity:0.5;} }
-  #game { display:none; flex-direction:column; height:100vh; }
-  header { display:flex; justify-content:space-between; padding:10px; background:#4fc3f7; color:white; font-size:1.2em; }
-  #menu { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; }
-  .btn { font-size:2em; padding:15px 30px; border:none; border-radius:15px; cursor:pointer; background:#81d4fa; color:#fff; }
-  #nav { display:flex; justify-content:space-around; background:#0288d1; padding:10px; }
-  #nav button { font-size:2em; background:none; border:none; color:white; cursor:pointer; }
-  .hidden { display:none; }
+  :root{
+    --bg1:#07122a; --bg2:#0b6fa6; --accent:#ffd54a; --panel:#082a44;
+    --glass: rgba(255,255,255,0.04); --good:#7ee7a6; --bad:#ff8a80; --btn:#ffcc66;
+  }
+  *{box-sizing:border-box;font-family:Inter, "Segoe UI", Roboto, Arial, sans-serif}
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:#fff}
+  .screen{width:100%;max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;position:relative;overflow:hidden}
+
+  /* LOADER */
+  #loader{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(2,6,23,0.98),rgba(2,6,23,0.85));z-index:99}
+  .spinner{width:84px;height:84px;border-radius:50%;border:10px solid rgba(255,255,255,0.06);border-top-color:var(--accent);animation:spin 1s linear infinite;margin-bottom:14px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loader-text{font-weight:700;letter-spacing:0.6px}
+
+  /* HUD */
+  .hud{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;gap:8px;z-index:10}
+  .hud .group{display:flex;gap:8px;align-items:center}
+  .chip{background:var(--glass);padding:8px 12px;border-radius:999px;font-weight:700;color:#fff;display:flex;gap:8px;align-items:center}
+  .bar{height:10px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;width:140px}
+  .bar > i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ffd54a,#ff8a00);transition:width .12s linear}
+
+  /* STAGE */
+  .stage{flex:1;display:flex;align-items:center;justify-content:center;padding:12px}
+  .card{width:100%;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:16px;padding:12px;box-shadow:0 14px 40px rgba(0,0,0,0.5);backdrop-filter:blur(4px)}
+  .title{color:var(--accent);font-weight:800;font-size:20px;margin:0 0 8px}
+  .muted{color:rgba(255,255,255,0.7);font-size:13px}
+
+  /* PANELS */
+  .panel{display:none}
+  .panel.active{display:block}
+  .question{font-size:26px;font-weight:800;color:#fff;text-align:center;margin:10px 0}
+  input[type="text"], input[type="number"]{width:100%;padding:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.03);color:#fff;font-size:16px;margin-top:8px}
+
+  .btn{background:var(--btn);border:none;color:#042;padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer;margin-top:8px}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#fff}
+
+  /* bottom bar like Subway Surfers */
+  .bottom{display:flex;gap:10px;padding:12px;background:linear-gradient(180deg,rgba(0,0,0,0.12),rgba(0,0,0,0.18));align-items:center;justify-content:space-around;border-top-left-radius:18px;border-top-right-radius:18px;position:sticky;bottom:0}
+  .icon{width:64px;height:64px;border-radius:14px;background:#fff;color:#042;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 10px 24px rgba(0,0,0,0.45);transition:transform .16s ease}
+  .icon.pulse{animation:pop 1.6s infinite}
+  @keyframes pop{0%{transform:translateY(0)}50%{transform:translateY(-6px)}100%{transform:translateY(0)}}
+  .icon.small{width:56px;height:56px;font-size:24px}
+  .icon:active{transform:scale(.95) rotate(-4deg)}
+
+  /* menu-mode game area */
+  #menuGameArea{position:relative;height:220px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:12px;overflow:hidden}
+  .target{position:absolute;font-size:28px;user-select:none;cursor:pointer;touch-action:manipulation;transition:transform .12s ease}
+  .bad{filter:drop-shadow(0 6px 12px rgba(255,0,0,0.18))}
+
+  /* ranking */
+  .ranking-list{max-height:260px;overflow:auto;padding:6px;margin-top:8px}
+  .rank-item{display:flex;justify-content:space-between;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,0.02);margin-bottom:8px}
+
+  /* responsive */
+  @media (max-width:420px){
+    .icon{width:56px;height:56px;font-size:22px}
+    .title{font-size:18px}
+    .question{font-size:20px}
+  }
 </style>
 </head>
 <body>
+  <div class="screen" role="application" aria-label="MindMath juegos">
 
-<div id="loading">🎮 Cargando...</div>
-
-<div id="game">
-  <header>
-    <div>⏱ <span id="time">30</span>s</div>
-    <div>❤️ <span id="lives">3</span></div>
-    <div>
-      <button id="soundBtn">🔊</button>
-      <button id="difficultyBtn">👶</button>
+    <!-- Loader -->
+    <div id="loader" aria-hidden="false">
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="loader-text">Cargando MindMath...</div>
     </div>
-  </header>
-  <div id="menu">
-    <button class="btn" onclick="startGame('menu')">🎮 Jugar Infinito</button>
-    <button class="btn" onclick="startGame('memoria')">🧠 Memoria</button>
-    <button class="btn" onclick="startGame('calculo')">⚡ Cálculo rápido</button>
-    <button class="btn" onclick="startGame('sudoku')">🔢 Sudoku infantil</button>
-    <button class="btn" onclick="startGame('suma')">➕ Suma simple</button>
-    <button class="btn" onclick="showRanking()">⭐ Ranking</button>
+
+    <!-- HUD -->
+    <div class="hud" aria-hidden="false">
+      <div class="group">
+        <div class="chip">⏱ <div class="label" id="hudTime" style="margin-left:6px">30s</div></div>
+        <div class="chip">❤️ <div class="label" id="hudLives" style="margin-left:6px">3</div></div>
+      </div>
+      <div class="group">
+        <div class="chip">🏅 <div class="label" id="hudTop" style="margin-left:6px">Top: 0</div></div>
+        <div class="chip">👤 <div class="label" id="hudPlayer" style="margin-left:6px">Jugador</div></div>
+        <div class="chip" style="cursor:pointer" id="soundToggle">🔊</div>
+        <div class="chip" style="cursor:pointer" id="diffToggle">👶</div>
+      </div>
+    </div>
+
+    <!-- Stage -->
+    <div class="stage">
+      <div class="card">
+
+        <!-- MENU PANEL -->
+        <div id="panel-menu" class="panel active">
+          <div class="title">MindMath — ¡Juega & Aprende!</div>
+          <div class="muted">Barra superior muestra tiempo/vidas. Cambia dificultad y sonido desde arriba.</div>
+
+          <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+            <input id="playerName" type="text" placeholder="Nombre (opcional)" style="flex:1;padding:10px;border-radius:10px;border:none;background:rgba(255,255,255,0.03);color:#fff">
+            <button id="saveNameBtn" class="btn">Guardar</button>
+          </div>
+
+          <div style="margin-top:12px">
+            <div id="menuGameArea" aria-label="Mini juego en el menú"></div>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+              <button id="menuStartBtn" class="btn">Iniciar Modo Infinito</button>
+              <button id="menuStopBtn" class="btn ghost">Parar</button>
+              <div style="margin-left:auto;" class="muted">Puntos: <span id="menuScore">0</span></div>
+            </div>
+            <div style="margin-top:8px" class="muted">Toca objetivos verdes para +puntos, evita bombas (💣).</div>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button id="btnGoMain" class="btn">Juego Principal</button>
+            <button id="btnMem" class="btn ghost">🧠 Memoria</button>
+            <button id="btnSpeed" class="btn ghost">⚡ Cálculo</button>
+            <button id="btnSud" class="btn ghost">🔢 Sudoku</button>
+            <button id="btnSum" class="btn ghost">➕ Suma</button>
+            <button id="btnRank" class="btn ghost" style="margin-left:auto">🏆 Ranking</button>
+          </div>
+        </div>
+
+        <!-- MAIN GAME -->
+        <div id="panel-main" class="panel">
+          <div class="title">Juego Principal</div>
+          <div class="question" id="mainQ">0 + 0 = ?</div>
+          <input id="mainAns" type="text" inputmode="numeric" placeholder="Respuesta">
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="mainCheck" class="btn">Comprobar</button>
+            <button id="mainNew" class="btn ghost">Nuevo</button>
+            <button id="mainEnd" class="btn ghost">Terminar</button>
+            <div style="margin-left:auto" class="muted">Puntaje: <span id="mainScore">0</span></div>
+          </div>
+          <div id="mainFB" style="margin-top:8px;min-height:22px"></div>
+        </div>
+
+        <!-- MEMORY -->
+        <div id="panel-memory" class="panel">
+          <div class="title">🧠 Memoria</div>
+          <div id="memPrompt" class="question">Recuerda: 123</div>
+          <input id="memAns" type="text" placeholder="Escribe el número">
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="memCheck" class="btn">Comprobar</button>
+            <button id="memNew" class="btn ghost">Nuevo</button>
+            <div style="margin-left:auto" class="muted">Puntaje: <span id="memScore">0</span></div>
+          </div>
+          <div id="memFB" style="margin-top:8px;min-height:22px"></div>
+        </div>
+
+        <!-- SPEED -->
+        <div id="panel-speed" class="panel">
+          <div class="title">⚡ Cálculo rápido</div>
+          <div class="question" id="speedQ">5 × 5 = ?</div>
+          <input id="speedAns" type="text" placeholder="Respuesta">
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="speedCheck" class="btn">Comprobar</button>
+            <button id="speedNew" class="btn ghost">Nuevo</button>
+            <div style="margin-left:auto" class="muted">Puntaje: <span id="speedScore">0</span></div>
+          </div>
+          <div id="speedFB" style="margin-top:8px;min-height:22px"></div>
+        </div>
+
+        <!-- SUM -->
+        <div id="panel-sum" class="panel">
+          <div class="title">➕ Suma simple</div>
+          <div class="question" id="sumQ">2 + 3 = ?</div>
+          <input id="sumAns" type="text" placeholder="Respuesta">
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="sumCheck" class="btn">Comprobar</button>
+            <button id="sumNew" class="btn ghost">Nuevo</button>
+            <div style="margin-left:auto" class="muted">Puntaje: <span id="sumScore">0</span></div>
+          </div>
+          <div id="sumFB" style="margin-top:8px;min-height:22px"></div>
+        </div>
+
+        <!-- SUDOKU -->
+        <div id="panel-sudoku" class="panel">
+          <div class="title">🔢 Sudoku 4×4</div>
+          <div id="sudokuWrap" style="display:flex;justify-content:center"></div>
+          <div style="display:flex;gap:8px;margin-top:8px;justify-content:center">
+            <button id="sudokuCheck" class="btn">Comprobar</button>
+            <button id="sudokuNew" class="btn ghost">Nuevo</button>
+            <div style="margin-left:auto" class="muted">Puntaje: <span id="sudokuScore">0</span></div>
+          </div>
+          <div id="sudokuFB" style="margin-top:8px;min-height:22px"></div>
+        </div>
+
+        <!-- RANKING -->
+        <div id="panel-ranking" class="panel">
+          <div class="title">🏆 Ranking local</div>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input id="rankName" type="text" placeholder="Nombre para ranking" style="flex:1;padding:8px;border-radius:8px;border:none;background:rgba(255,255,255,0.03);color:#fff">
+            <button id="saveScoreBtn" class="btn">Guardar</button>
+            <button id="clearRankBtn" class="btn ghost">Limpiar</button>
+          </div>
+          <div class="ranking-list" id="rankingList"></div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="sendOnlineBtn" class="btn ghost">Enviar online (simulado)</button>
+            <button class="btn ghost" onclick="showPanel('panel-menu')">Volver</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bottom icons -->
+    <div class="bottom" aria-hidden="false">
+      <div class="icon pulse" id="i_memory">🧠</div>
+      <div class="icon pulse" id="i_speed">⚡</div>
+      <div class="icon pulse" id="i_sudoku">🔢</div>
+      <div class="icon pulse" id="i_sum">➕</div>
+      <div class="icon" id="i_rank">🏆</div>
+    </div>
+
   </div>
-  <div id="gameArea" class="hidden"></div>
-  <div id="ranking" class="hidden"></div>
-  <div id="nav">
-    <button onclick="goHome()">🏠</button>
-  </div>
-</div>
 
 <script>
-let ctx=new (window.AudioContext||window.webkitAudioContext)();
-let bgOsc, bgPlaying=false, soundOn=true;
-let time=30, lives=3, timer, score=0, difficulty="easy";
-let ranking=JSON.parse(localStorage.getItem("ranking")||"[]");
+/* ========== Audio (Web Audio API) ========== */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+let bgOsc = null;
+let soundEnabled = true;
 
-function playSound(type){
-  if(!soundOn) return;
-  let o=ctx.createOscillator(), g=ctx.createGain();
-  o.connect(g); g.connect(ctx.destination);
-  if(type==="ding"){o.frequency.value=880;}
-  if(type==="ok"){o.frequency.value=660;}
-  if(type==="err"){o.frequency.value=220;}
-  o.type="sine"; g.gain.setValueAtTime(0.1,ctx.currentTime);
-  o.start(); o.stop(ctx.currentTime+0.3);
+function ensureAudio(){
+  if(!audioCtx) audioCtx = new AudioCtx();
 }
 
-function toggleBg(){
-  if(!soundOn){bgOsc?.stop(); bgPlaying=false; return;}
-  if(bgPlaying) return;
-  bgOsc=ctx.createOscillator(); let g=ctx.createGain();
-  bgOsc.connect(g); g.connect(ctx.destination);
-  bgOsc.type="triangle"; bgOsc.frequency.value=220;
-  g.gain.setValueAtTime(0.03,ctx.currentTime);
-  bgOsc.start(); bgPlaying=true;
+// short beep
+function playBeep(freq=880, type='sine', duration=0.12, gain=0.08){
+  if(!soundEnabled) return;
+  ensureAudio();
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type; o.frequency.value = freq;
+  o.connect(g); g.connect(audioCtx.destination);
+  g.gain.setValueAtTime(gain, audioCtx.currentTime);
+  o.start();
+  o.stop(audioCtx.currentTime + duration);
 }
 
+// error buzz
+function playBuzz(){
+  if(!soundEnabled) return;
+  ensureAudio();
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = 'sawtooth'; o.frequency.value = 160;
+  o.connect(g); g.connect(audioCtx.destination);
+  g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.35);
+  g.gain.setValueAtTime(0.08, audioCtx.currentTime);
+  o.start();
+  o.stop(audioCtx.currentTime + 0.35);
+}
+
+// ding
+function playDing(){ playBeep(1200,'sine',0.14,0.09); }
+
+// background simple loop
+function startBackground(){
+  if(!soundEnabled) return;
+  ensureAudio();
+  if(bgOsc) return;
+  bgOsc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  bgOsc.type='triangle';
+  bgOsc.frequency.value = 220;
+  bgOsc.connect(gain); gain.connect(audioCtx.destination);
+  gain.gain.setValueAtTime(0.02,audioCtx.currentTime);
+  bgOsc.start();
+}
+function stopBackground(){
+  if(bgOsc){ try{ bgOsc.stop(); }catch(e){} bgOsc=null; }
+}
+function setSoundEnabled(v){
+  soundEnabled = !!v;
+  if(soundEnabled) startBackground(); else stopBackground();
+  document.getElementById('soundToggle').textContent = soundEnabled ? '🔊' : '🔇';
+}
+
+/* ========== Global game state & HUD ========== */
+const DEFAULTS = {
+  easy: { time:60, lives:5 },
+  medium:{ time:30, lives:3 },
+  hard:{ time:15, lives:2 }
+};
+let diff = localStorage.getItem('mind_diff') || 'medium';
+let globalTime = DEFAULTS[diff].time;
+let globalLives = DEFAULTS[diff].lives;
+let timerInterval = null;
+let currentPanel = 'panel-menu'; // start at menu
+let globalScore = 0; // session score
+let menuRunning = false;
+let menuSpawner = null;
+const storageKeys = { player:'mind_player', top:'mind_top', ranking:'mind_ranking' };
+
+// UI updates
 function updateHUD(){
-  document.getElementById("time").textContent=time;
-  document.getElementById("lives").textContent=lives;
+  document.getElementById('hudTime').textContent = Math.ceil(globalTime) + 's';
+  document.getElementById('hudLives').textContent = globalLives;
+  document.getElementById('hudTop').textContent = 'Top: ' + (localStorage.getItem(storageKeys.top) || 0);
+  document.getElementById('hudPlayer').textContent = localStorage.getItem(storageKeys.player) || 'Jugador';
+  document.getElementById('menuScore').textContent = globalScore;
+  document.getElementById('mainScore').textContent = window.mainScore || 0;
+  document.getElementById('memScore').textContent = window.memScore || 0;
+  document.getElementById('speedScore').textContent = window.speedScore || 0;
+  document.getElementById('sumScore').textContent = window.sumScore || 0;
+  document.getElementById('sudokuScore').textContent = window.sudokuScore || 0;
 }
 
-function startTimer(){
-  clearInterval(timer);
-  timer=setInterval(()=>{
-    time--; updateHUD();
-    if(time<=0) endGame();
-  },1000);
+/* Timer */
+function startGlobalTimer(){
+  stopGlobalTimer();
+  timerInterval = setInterval(()=>{
+    globalTime = Math.max(0, Math.round((globalTime - 0.1)*10)/10);
+    updateHUD();
+    if(globalTime <= 0){
+      stopGlobalTimer();
+      onGameOver('Tiempo agotado');
+    }
+  },100);
+}
+function stopGlobalTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval = null; } }
+function resetGlobalState(){
+  const cfg = DEFAULTS[diff] || DEFAULTS.medium;
+  globalTime = cfg.time;
+  globalLives = cfg.lives;
+  globalScore = 0;
+  updateHUD();
 }
 
-function startGame(mode){
-  score=0;
-  document.getElementById("menu").classList.add("hidden");
-  document.getElementById("ranking").classList.add("hidden");
-  let area=document.getElementById("gameArea");
-  area.classList.remove("hidden"); area.innerHTML="";
-  if(difficulty==="easy"){time=60; lives=5;}
-  if(difficulty==="medium"){time=30; lives=3;}
-  if(difficulty==="hard"){time=15; lives=2;}
-  updateHUD(); startTimer();
-  if(mode==="memoria"){area.innerHTML="🧠 Juego de Memoria (demo)";} 
-  else if(mode==="calculo"){area.innerHTML="⚡ Juego de Cálculo (demo)";}
-  else if(mode==="sudoku"){area.innerHTML="🔢 Sudoku Infantil (demo)";}
-  else if(mode==="suma"){area.innerHTML="➕ Juego de Suma (demo)";}
-  else {area.innerHTML="🎮 Juego Infinito (demo)";}
+/* change difficulty toggle */
+function setDifficulty(d){
+  diff = d;
+  localStorage.setItem('mind_diff', d);
+  document.getElementById('diffToggle').textContent = d==='easy' ? '👶' : (d==='medium' ? '🧒' : '👦');
+  resetGlobalState();
 }
 
-function endGame(){
-  clearInterval(timer);
-  playSound("err");
-  alert("Fin del juego. Puntos: "+score);
-  ranking.push({puntos:score, fecha:new Date().toLocaleString()});
-  localStorage.setItem("ranking",JSON.stringify(ranking));
-  goHome();
+/* ========== Panels management ========== */
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  const p = document.getElementById(id);
+  if(p) p.classList.add('active');
+  currentPanel = id;
+  updateHUD();
 }
 
-function goHome(){
-  document.getElementById("gameArea").classList.add("hidden");
-  document.getElementById("ranking").classList.add("hidden");
-  document.getElementById("menu").classList.remove("hidden");
+/* ========== Ranking (local + online stub) ========== */
+function loadRanking(){ return JSON.parse(localStorage.getItem(storageKeys.ranking) || '[]'); }
+function saveRanking(list){ localStorage.setItem(storageKeys.ranking, JSON.stringify(list)); renderRanking(); }
+function addToRanking(name, score){
+  const list = loadRanking();
+  list.push({name: name || 'Jugador', score: score || 0, when: Date.now()});
+  list.sort((a,b)=>b.score-a.score);
+  saveRanking(list.slice(0,20));
+  const top = Math.max(Number(localStorage.getItem(storageKeys.top) || 0), score || 0);
+  localStorage.setItem(storageKeys.top, top);
+  updateHUD();
+}
+function renderRanking(){
+  const list = loadRanking();
+  const out = document.getElementById('rankingList');
+  out.innerHTML = '';
+  if(!list.length){ out.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.6)">Aún no hay puntajes</div>'; return; }
+  list.forEach((r,i)=>{
+    const div = document.createElement('div'); div.className='rank-item';
+    div.innerHTML = `<div style="font-weight:700">${i+1}. ${escapeHtml(r.name)}</div><div>${r.score} pts</div>`;
+    out.appendChild(div);
+  });
+}
+function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+async function sendOnlineStub(name,score){
+  // placeholder to integrate real API
+  console.log('Enviar online (simulado):', {name,score});
+  alert('Envío online simulado. Integra tu API en sendOnlineStub para enviar puntajes reales.');
 }
 
-function showRanking(){
-  document.getElementById("menu").classList.add("hidden");
-  let r=document.getElementById("ranking");
-  r.classList.remove("hidden");
-  r.innerHTML="<h2>⭐ Ranking</h2>"+ranking.map(e=>"<div>"+e.puntos+" pts - "+e.fecha+"</div>").join("");
-}
-
-document.getElementById("soundBtn").onclick=()=>{
-  soundOn=!soundOn;
-  document.getElementById("soundBtn").textContent=soundOn?"🔊":"🔇";
-  if(soundOn) toggleBg(); else{bgOsc?.stop(); bgPlaying=false;}
-};
-
-document.getElementById("difficultyBtn").onclick=()=>{
-  if(difficulty==="easy"){difficulty="medium";document.getElementById("difficultyBtn").textContent="🧒";}
-  else if(difficulty==="medium"){difficulty="hard";document.getElementById("difficultyBtn").textContent="👦";}
-  else{difficulty="easy";document.getElementById("difficultyBtn").textContent="👶";}
-};
-
-window.onload=()=>{
+/* ========== Game Over handling ========== */
+function onGameOver(reason){
+  playBuzz();
   setTimeout(()=>{
-    document.getElementById("loading").style.display="none";
-    document.getElementById("game").style.display="flex";
-    playSound("ding"); toggleBg();
-  },2000);
-};
+    const name = localStorage.getItem(storageKeys.player) || 'Jugador';
+    const score = globalScore;
+    if(confirm(`Game Over (${reason}). Puntaje: ${score}\n¿Guardar en ranking local?`)){
+      addToRanking(name, score);
+    }
+    stopMenuMode();
+    stopGlobalTimer();
+    resetGlobalState();
+    showPanel('panel-menu');
+  }, 200);
+}
+
+/* ========== Menu Infinite Mode (targets) ========== */
+let menuTargets = [];
+function startMenuMode(){
+  resetGlobalState();
+  showPanel('panel-menu');
+  startGlobalTimer();
+  globalScore = 0; updateHUD();
+  menuRunning = true;
+  const area = document.getElementById('menuGameArea');
+  area.innerHTML = '';
+  menuSpawner = setInterval(()=>spawnMenuTarget(area), 850);
+}
+function stopMenuMode(){
+  menuRunning = false;
+  clearInterval(menuSpawner); menuSpawner = null;
+  document.getElementById('menuGameArea').innerHTML = '';
+}
+function spawnMenuTarget(area){
+  const w = area.clientWidth || 420;
+  const h = area.clientHeight || 200;
+  const el = document.createElement('div');
+  const isBomb = Math.random() < 0.18;
+  el.className = 'target' + (isBomb ? ' bad' : '');
+  el.textContent = isBomb ? '💣' : (Math.random()<0.5 ? '🍎':'⭐');
+  const size = 28 + Math.random()*26;
+  el.style.fontSize = size+'px';
+  el.style.left = Math.max(6, Math.random()*(w-60)) + 'px';
+  el.style.top = (h + 40) + 'px';
+  area.appendChild(el);
+
+  // animate up
+  const duration = 2800 + Math.random()*2000;
+  const start = performance.now();
+  function frame(now){
+    const t = (now - start)/duration;
+    if(t>=1){ try{ el.remove(); }catch(e){} return; }
+    const y = (1 - t) * (h + 40) - t*120;
+    el.style.top = y + 'px';
+    el.style.opacity = String(1 - t*0.8);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  el.addEventListener('pointerdown', (ev)=>{
+    ev.preventDefault(); ev.stopPropagation();
+    if(isBomb){
+      // bomb: lose life
+      playBuzz();
+      loseLife('Bomba');
+      el.remove();
+    } else {
+      // good: gain points
+      playBeep(900,'sine',0.1,0.06);
+      globalScore += 10;
+      updateHUD();
+      el.style.transform = 'scale(1.25)';
+      setTimeout(()=>el.remove(),120);
+    }
+  });
+
+  // auto remove after lifetime
+  setTimeout(()=>{ try{ el.remove(); }catch(e){} }, duration+250);
+}
+
+function loseLife(reason){
+  globalLives = Math.max(0, globalLives - 1);
+  updateHUD();
+  if(globalLives <= 0){
+    onGameOver(reason || 'Vidas');
+  }
+}
+
+/* ========== MAIN GAME logic ========== */
+window.mainScore = 0;
+let mainCorrect = 0;
+function newMainQuestion(){
+  const op = Math.random()<0.5 ? '+' : '×';
+  const a = rand(1,12), b = rand(1,12);
+  mainCorrect = op==='+' ? a+b : a*b;
+  document.getElementById('mainQ').textContent = `${a} ${op} ${b} = ?`;
+  document.getElementById('mainAns').value = '';
+  document.getElementById('mainFB').textContent = '';
+}
+document.getElementById('mainNew').addEventListener('click', newMainQuestion);
+document.getElementById('mainCheck').addEventListener('click', ()=>{
+  const v = Number(document.getElementById('mainAns').value);
+  if(document.getElementById('mainAns').value.trim()===''){ document.getElementById('mainFB').textContent = 'Ingresa la respuesta'; return; }
+  if(v === mainCorrect){
+    document.getElementById('mainFB').textContent = '✅ Correcto!';
+    playBeep(1000,'sine',0.08,0.06);
+    window.mainScore += 10; globalScore += 10; updateHUD();
+  } else {
+    document.getElementById('mainFB').textContent = '❌ Incorrecto';
+    playBuzz(); loseLife('Main error');
+  }
+  if(globalScore > Number(localStorage.getItem(storageKeys.top)||0)) localStorage.setItem(storageKeys.top, globalScore);
+});
+document.getElementById('mainEnd').addEventListener('click', ()=>{
+  if(confirm('Terminar partida principal y guardar puntaje?')){
+    addToRanking(localStorage.getItem(storageKeys.player)||'Jugador', globalScore);
+    resetGlobalState(); stopGlobalTimer(); showPanel('panel-menu');
+  }
+});
+document.getElementById('btnGoMain').addEventListener('click', ()=>{ resetGlobalState(); showPanel('panel-main'); startGlobalTimer(); newMainQuestion(); });
+
+/* ========== MEMORY logic ========== */
+window.memScore = 0;
+let memValue = null;
+function newMemory(){
+  memValue = rand(100,999);
+  document.getElementById('memPrompt').textContent = 'Recuerda: ' + memValue;
+  document.getElementById('memAns').value = '';
+  document.getElementById('memFB').textContent = '';
+  setTimeout(()=>{ document.getElementById('memPrompt').textContent = 'Escribe el número que viste'; }, 1500);
+}
+document.getElementById('memNew').addEventListener('click', newMemory);
+document.getElementById('memCheck').addEventListener('click', ()=>{
+  const v = document.getElementById('memAns').value.trim();
+  if(v === String(memValue)){
+    document.getElementById('memFB').textContent = '✅ Correcto!';
+    playBeep(1200,'sine',0.08,0.06);
+    window.memScore += 8; globalScore += 8; updateHUD();
+  } else {
+    document.getElementById('memFB').textContent = '❌ Fallaste';
+    playBuzz(); loseLife('Memoria');
+  }
+});
+document.getElementById('btnMem').addEventListener('click', ()=>{ resetGlobalState(); showPanel('panel-memory'); startGlobalTimer(); newMemory(); });
+
+/* ========== SPEED logic ========== */
+window.speedScore = 0;
+let speedAns = 0;
+function newSpeed(){
+  const a = rand(2,9), b = rand(2,9);
+  speedAns = a*b;
+  document.getElementById('speedQ').textContent = `${a} × ${b} = ?`;
+  document.getElementById('speedAns').value = '';
+  document.getElementById('speedFB').textContent = '';
+}
+document.getElementById('speedNew').addEventListener('click', newSpeed);
+document.getElementById('speedCheck').addEventListener('click', ()=>{
+  const v = Number(document.getElementById('speedAns').value);
+  if(document.getElementById('speedAns').value.trim()===''){ document.getElementById('speedFB').textContent='Ingresa respuesta'; return; }
+  if(v === speedAns){
+    document.getElementById('speedFB').textContent = '✅ Bien!';
+    playBeep(900,'sine',0.08,0.06);
+    window.speedScore += 7; globalScore += 7; updateHUD();
+    newSpeed();
+  } else {
+    document.getElementById('speedFB').textContent = '❌ Incorrecto';
+    playBuzz(); loseLife('Speed');
+  }
+});
+document.getElementById('btnSpeed').addEventListener('click', ()=>{ resetGlobalState(); showPanel('panel-speed'); startGlobalTimer(); newSpeed(); });
+
+/* ========== SUM logic ========== */
+window.sumScore = 0;
+let sumAns = 0;
+function newSum(){
+  const a = rand(1,6), b = rand(1,6);
+  sumAns = a + b;
+  document.getElementById('sumQ').textContent = `${a} + ${b} = ?`;
+  document.getElementById('sumAns').value = '';
+  document.getElementById('sumFB').textContent = '';
+}
+document.getElementById('sumNew').addEventListener('click', newSum);
+document.getElementById('sumCheck').addEventListener('click', ()=>{
+  const v = Number(document.getElementById('sumAns').value);
+  if(document.getElementById('sumAns').value.trim()===''){ document.getElementById('sumFB').textContent='Ingresa respuesta'; return; }
+  if(v === sumAns){
+    document.getElementById('sumFB').textContent = '✅ Muy bien!';
+    playBeep(1000,'sine',0.08,0.06);
+    window.sumScore += 4; globalScore += 4; updateHUD();
+    newSum();
+  } else {
+    document.getElementById('sumFB').textContent = '❌ Prueba otra vez';
+    playBuzz(); loseLife('Sum');
+  }
+});
+document.getElementById('btnSum').addEventListener('click', ()=>{ resetGlobalState(); showPanel('panel-sum'); startGlobalTimer(); newSum(); });
+
+/* ========== SUDOKU 4x4 ========= */
+window.sudokuScore = 0;
+function buildSudoku(){
+  const base = [[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]];
+  const wrap = document.getElementById('sudokuWrap'); wrap.innerHTML = ''; const table = document.createElement('table');
+  table.style.borderCollapse='collapse';
+  const shuffled = base.sort(()=>Math.random()-0.5).map(r=>r.slice());
+  for(let r=0;r<4;r++){
+    const tr = document.createElement('tr');
+    for(let c=0;c<4;c++){
+      const td = document.createElement('td');
+      td.style.border='1px solid rgba(255,255,255,0.06)';
+      td.style.padding='4px';
+      const inp = document.createElement('input');
+      inp.type='number'; inp.min=1; inp.max=4; inp.style.width='44px'; inp.style.textAlign='center';
+      if(Math.random()<0.5){ inp.value=''; } else { inp.value=shuffled[r][c]; inp.disabled=true; inp.style.background='rgba(255,255,255,0.02)'; }
+      td.appendChild(inp); tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+  wrap.appendChild(table);
+  document.getElementById('sudokuFB').textContent = '';
+}
+document.getElementById('sudokuNew').addEventListener('click', buildSudoku);
+document.getElementById('sudokuCheck').addEventListener('click', ()=>{
+  const inputs = Array.from(document.querySelectorAll('#sudokuWrap input'));
+  const vals = [];
+  for(let r=0;r<4;r++){
+    const row = [];
+    for(let c=0;c<4;c++){
+      const v = inputs[r*4 + c].value.trim();
+      if(v === ''){ document.getElementById('sudokuFB').textContent = '❌ Completa todas'; return; }
+      row.push(Number(v));
+    }
+    vals.push(row);
+  }
+  function uniq(arr){ return new Set(arr).size===4 && arr.every(x=>x>=1 && x<=4); }
+  for(let r=0;r<4;r++) if(!uniq(vals[r])){ document.getElementById('sudokuFB').textContent = '❌ Error en fila '+(r+1); return; }
+  for(let c=0;c<4;c++){ const col=[vals[0][c],vals[1][c],vals[2][c],vals[3][c]]; if(!uniq(col)){ document.getElementById('sudokuFB').textContent='❌ Error en columna '+(c+1); return; } }
+  document.getElementById('sudokuFB').textContent = '✅ ¡Buen trabajo!';
+  playBeep(1100,'sine',0.08,0.06);
+  window.sudokuScore += 12; globalScore += 12; updateHUD();
+});
+document.getElementById('i_memory').addEventListener('click', ()=>{ resetGlobalState(); showPanel('panel-memory'); startGlobalTimer(); newMemory(); });
+document.getElementById('i_speed').addEventListener('click', ()=>{ resetGlobalState(); showPanel('panel-speed'); startGlobalTimer(); newSpeed(); });
+document.getElementById('i_sudoku').addEventListener('click', ()=>{ resetGlobalState(); showPanel('panel-sudoku'); startGlobalTimer(); buildSudoku(); });
+document.getElementById('i_sum').addEventListener('click', ()=>{ resetGlobalState(); showPanel('panel-sum'); startGlobalTimer(); newSum(); });
+document.getElementById('i_rank').addEventListener('click', ()=>{ renderRanking(); showPanel('panel-ranking'); });
+
+/* ========== Controls / UI wiring ========== */
+document.getElementById('saveNameBtn').addEventListener('click', ()=>{
+  const nm = document.getElementById('playerName').value.trim();
+  if(nm){ localStorage.setItem(storageKeys.player, nm); updateHUD(); alert('Nombre guardado: '+nm); }
+});
+document.getElementById('menuStartBtn').addEventListener('click', ()=>{ resetGlobalState(); startMenuMode(); startGlobalTimer(); setTimeout(()=>playDingOnce(),300); });
+document.getElementById('menuStopBtn').addEventListener('click', ()=>{ stopMenuMode(); stopGlobalTimer(); });
+document.getElementById('btnMem').addEventListener('click', ()=>{ resetGlobalState(); showPanel('panel-memory'); startGlobalTimer(); newMemory(); });
+document.getElementById('btnSpeed').addEventListener('click', ()=>{ resetGlobalState(); showPanel('panel-speed'); startGlobalTimer(); newSpeed(); });
+document.getElementById('btnSud').addEventListener('click', ()=>{ resetGlobalState(); showPanel('panel-sudoku'); startGlobalTimer(); buildSudoku(); });
+document.getElementById('btnSum').addEventListener('click', ()=>{ resetGlobalState(); showPanel('panel-sum'); startGlobalTimer(); newSum(); });
+document.getElementById('btnRank').addEventListener('click', ()=>{ renderRanking(); showPanel('panel-ranking'); });
+
+document.getElementById('saveScoreBtn').addEventListener('click', ()=>{
+  const name = document.getElementById('rankName').value.trim() || localStorage.getItem(storageKeys.player) || 'Jugador';
+  addToRanking(name, globalScore || 0);
+  alert('Puntaje guardado localmente.');
+});
+document.getElementById('clearRankBtn').addEventListener('click', ()=>{ if(confirm('Borrar ranking local?')){ saveRanking([]); } });
+document.getElementById('sendOnlineBtn').addEventListener('click', ()=>{ const n = document.getElementById('rankName').value.trim() || localStorage.getItem(storageKeys.player) || 'Jugador'; sendOnlineStub(n, globalScore || 0); });
+
+/* difficulty toggle */
+document.getElementById('diffToggle').addEventListener('click', ()=>{
+  if(diff==='easy') setDifficulty('medium');
+  else if(diff==='medium') setDifficulty('hard');
+  else setDifficulty('easy');
+});
+
+/* sound toggle */
+document.getElementById('soundToggle').addEventListener('click', ()=>{
+  setSoundEnabled(!soundEnabled);
+});
+
+/* initial difficulty from storage */
+setDifficulty(localStorage.getItem('mind_diff') || diff);
+
+/* initial sound */
+setSoundEnabled(true);
+
+/* loader -> start */
+function playDingOnce(){ playDing(); }
+window.addEventListener('load', ()=>{
+  // loader hide
+  setTimeout(()=>{
+    const loader = document.getElementById('loader');
+    if(loader) loader.style.display='none';
+    showPanel('panel-menu');
+    // play ding and background
+    playDingOnce();
+    setTimeout(()=>{ if(soundEnabled) startBackground(); }, 350);
+    // show player if saved
+    if(!localStorage.getItem(storageKeys.player)) localStorage.setItem(storageKeys.player,'Jugador');
+    updateHUD();
+  }, 900);
+});
+
+/* helpers */
+function rand(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+
+/* expose for debugging */
+window._mind = { setDifficulty, startMenuMode, stopMenuMode, addToRanking, loadRanking, renderRanking };
+
+/* keyboard shortcuts (for desktop debugging) */
+document.addEventListener('keydown',(e)=>{
+  if(e.key==='Escape'){ stopMenuMode(); stopGlobalTimer(); showPanel('panel-menu'); }
+});
+
 </script>
 </body>
 </html>

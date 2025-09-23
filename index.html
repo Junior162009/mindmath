@@ -2,38 +2,27 @@
 <html lang="es">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
 <title>MindMath - Web</title>
 <style>
-  :root{
-    --bg:#051126; --card:#072033; --accent:#1e90ff; --accent-2:#7de; --text:#e6eef8;
-    --muted:#9fb3c8; --good:#6ee7b7; --bad:#ffb4a2;
-    font-family: Inter, Roboto, Arial, sans-serif;
-  }
-  html,body{height:100%; margin:0; background:var(--bg); color:var(--text);}
-  .app{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px;}
-  .card{width:100%; max-width:560px; background:linear-gradient(180deg,var(--card), #022); border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,0.6); padding:16px; box-sizing:border-box;}
-  h1{margin:6px 0 12px; font-size:28px; text-align:center;}
-  .row{display:flex; gap:8px; align-items:center;}
-  .col{display:flex; flex-direction:column; gap:8px;}
-  button{background:var(--accent); color:#fff; border:none; padding:10px 12px; border-radius:8px; font-size:16px; cursor:pointer;}
-  button.ghost{background:transparent; border:1px solid rgba(255,255,255,0.08);}
-  select, input[type="text"]{padding:10px; border-radius:8px; border:none; font-size:16px; background:rgba(255,255,255,0.02); color:var(--text);}
-  label{font-size:14px; color:var(--muted);}
-  .center{display:flex; justify-content:center; align-items:center;}
+  body{background:#051126;color:#e6eef8;font-family:sans-serif;margin:0;}
+  .app{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:16px;}
+  .card{width:100%;max-width:500px;background:#072033;padding:20px;border-radius:12px;
+        box-shadow:0 8px 30px rgba(0,0,0,.6);}
+  h1{text-align:center;margin:0 0 16px;}
   .hidden{display:none;}
-  .question{font-size:32px; text-align:center; margin:10px 0;}
-  .timebar{height:12px; width:100%; background:rgba(255,255,255,0.06); border-radius:8px; overflow:hidden;}
-  .timefill{height:100%; width:100%; background:linear-gradient(90deg,var(--accent), var(--accent-2)); transition:width 0.08s linear;}
-  .kbd{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:6px;}
-  .kbd button{padding:16px; font-size:20px; border-radius:10px; background:rgba(255,255,255,0.06); color:var(--text);}
-  .status{display:flex; justify-content:space-between; font-size:14px; color:var(--muted); margin-bottom:6px;}
-  .footer-row{display:flex; gap:8px; margin-top:10px; justify-content:space-between;}
-  .big{font-size:20px; padding:12px 16px;}
-  .feedback{min-height:40px; text-align:center;}
+  .row{display:flex;gap:8px;justify-content:center;margin-top:10px;}
+  select, input, button{font-size:16px;padding:10px;border-radius:8px;border:none;}
+  button{background:#1e90ff;color:white;cursor:pointer;}
+  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.2);}
+  .status{display:flex;justify-content:space-between;margin-bottom:8px;}
+  .question{text-align:center;font-size:28px;margin:20px 0;}
+  .timebar{height:12px;width:100%;background:rgba(255,255,255,0.1);border-radius:8px;overflow:hidden;}
+  .timefill{height:100%;width:100%;background:linear-gradient(90deg,#1e90ff,#7de);}
+  .feedback{text-align:center;min-height:40px;}
   .feedback .msg{color:#ffd380;}
-  .feedback .explain{color:var(--muted); font-size:14px; margin-top:4px;}
-  .gameover{font-size:22px; text-align:center; color:#ffd380;}
+  .feedback .explain{color:#9fb3c8;font-size:14px;margin-top:4px;}
+  .gameover{text-align:center;font-size:22px;color:#ffd380;}
 </style>
 </head>
 <body>
@@ -42,17 +31,24 @@
   <!-- MENÚ -->
   <div class="card" id="menuScreen">
     <h1>MindMath</h1>
-    <div class="col">
-      <label>Dificultad</label>
-      <select id="difficulty">
-        <option>Fácil</option>
-        <option>Medio</option>
-        <option>Difícil</option>
-      </select>
-      <div class="center" style="margin-top:12px;">
-        <button id="playBtn" class="big">Jugar</button>
-      </div>
-    </div>
+    <label>Dificultad:</label>
+    <select id="difficulty">
+      <option>Fácil</option>
+      <option>Medio</option>
+      <option>Difícil</option>
+    </select>
+    <div class="row"><button id="playBtn">Jugar</button></div>
+    <div class="row"><button id="helpBtn" class="ghost">Instrucciones</button></div>
+  </div>
+
+  <!-- INSTRUCCIONES -->
+  <div class="card hidden" id="helpScreen">
+    <h1>Instrucciones</h1>
+    <p>• Fácil: suma y resta (solo enteros).<br>
+       • Medio: multiplicación y división.<br>
+       • Difícil: suma, resta, multiplicación, división y raíces cuadradas.<br>
+       Responde antes de que termine el tiempo. Fallar resta vidas.</p>
+    <div class="row"><button id="backFromHelp" class="ghost">Volver</button></div>
   </div>
 
   <!-- JUEGO -->
@@ -61,20 +57,16 @@
       <div id="scoreLabel">Puntaje: 0</div>
       <div id="livesLabel">Vidas: 3</div>
     </div>
+    <div style="font-size:14px;margin-bottom:6px;">Tiempo: <span id="timeText">0s</span></div>
     <div class="question" id="questionLabel">0 × 0 = ?</div>
     <div class="timebar"><div id="timeFill" class="timefill"></div></div>
-    <input id="answerInput" type="text" placeholder="Respuesta">
+    <input id="answerInput" type="text" placeholder="Escribe la respuesta" style="width:100%;margin-top:10px;">
     <div class="feedback">
       <div class="msg" id="feedback"></div>
       <div class="explain" id="explain"></div>
     </div>
-    <div class="kbd" id="keypad">
-      <button data-d="1">1</button><button data-d="2">2</button><button data-d="3">3</button>
-      <button data-d="4">4</button><button data-d="5">5</button><button data-d="6">6</button>
-      <button data-d="7">7</button><button data-d="8">8</button><button data-d="9">9</button>
-      <button id="dotBtn">.</button><button data-d="0">0</button><button id="okBtn">✓</button>
-    </div>
-    <div class="footer-row">
+    <div class="row">
+      <button id="okBtn">Comprobar</button>
       <button id="restartBtn" class="ghost">Reiniciar</button>
       <button id="exitBtn" class="ghost">Salir</button>
     </div>
@@ -84,38 +76,38 @@
   <div class="card hidden" id="gameoverScreen">
     <h1>Juego terminado</h1>
     <div class="gameover" id="finalScore">Puntaje final: 0</div>
-    <div class="center" style="margin-top:10px;">
-      <button id="toMenuBtn" class="big">Volver al menú</button>
-    </div>
+    <div class="row"><button id="toMenuBtn">Volver al menú</button></div>
   </div>
+
 </div>
 
 <script>
-const Screens={menu:document.getElementById('menuScreen'),game:document.getElementById('gameScreen'),gameover:document.getElementById('gameoverScreen')};
+const Screens={menu:document.getElementById('menuScreen'),help:document.getElementById('helpScreen'),
+               game:document.getElementById('gameScreen'),gameover:document.getElementById('gameoverScreen')};
 const el={difficulty:document.getElementById('difficulty'),playBtn:document.getElementById('playBtn'),
-  scoreLabel:document.getElementById('scoreLabel'),livesLabel:document.getElementById('livesLabel'),
-  questionLabel:document.getElementById('questionLabel'),timeFill:document.getElementById('timeFill'),
-  answerInput:document.getElementById('answerInput'),feedback:document.getElementById('feedback'),explain:document.getElementById('explain'),
-  keypad:document.getElementById('keypad'),okBtn:document.getElementById('okBtn'),
-  restartBtn:document.getElementById('restartBtn'),exitBtn:document.getElementById('exitBtn'),
-  finalScore:document.getElementById('finalScore'),toMenuBtn:document.getElementById('toMenuBtn')};
+  helpBtn:document.getElementById('helpBtn'),backFromHelp:document.getElementById('backFromHelp'),
+  questionLabel:document.getElementById('questionLabel'),answerInput:document.getElementById('answerInput'),
+  feedback:document.getElementById('feedback'),explain:document.getElementById('explain'),
+  okBtn:document.getElementById('okBtn'),restartBtn:document.getElementById('restartBtn'),
+  exitBtn:document.getElementById('exitBtn'),scoreLabel:document.getElementById('scoreLabel'),
+  livesLabel:document.getElementById('livesLabel'),timeText:document.getElementById('timeText'),
+  timeFill:document.getElementById('timeFill'),finalScore:document.getElementById('finalScore'),
+  toMenuBtn:document.getElementById('toMenuBtn')};
 
-const state={difficulty:'medium',range_max:10,base_time:10,lives:3,score:0,time_remaining:0,max_time:10,num1:0,num2:0,correct:0,op:'*'};
+const state={difficulty:'medium',range_max:10,base_time:10,lives:3,score:0,time_remaining:0,max_time:10,
+             num1:0,num2:0,correct:0,op:'*',tickInterval:null};
 
 function show(s){for(const k in Screens)Screens[k].classList.add('hidden');s.classList.remove('hidden');}
-
 function applyDifficulty(name){
   if(name==='Fácil'){state.range_max=8;state.base_time=12;state.lives=5;state.difficulty='easy';}
   else if(name==='Difícil'){state.range_max=20;state.base_time=7;state.lives=2;state.difficulty='hard';}
   else{state.range_max=12;state.base_time=10;state.lives=3;state.difficulty='medium';}
 }
-
 function pickOperator(){
-  if(state.difficulty==='easy'){return Math.random()<0.5?'+':'-';}
+  if(state.difficulty==='easy') return Math.random()<0.5?'+':'-';
   if(state.difficulty==='hard'){const arr=['+','-','*','/','√'];return arr[Math.floor(Math.random()*arr.length)];}
   return Math.random()<0.5?'*':'/';
 }
-
 function newRound(){
   state.op=pickOperator();
   if(state.op==='+'){state.num1=rand(1,state.range_max);state.num2=rand(1,state.range_max);state.correct=state.num1+state.num2;el.questionLabel.textContent=`${state.num1} + ${state.num2} = ?`;}
@@ -126,38 +118,43 @@ function newRound(){
   state.time_remaining=state.base_time;
   el.answerInput.value="";el.feedback.textContent="";el.explain.textContent="";
 }
-
-function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function tick(){state.time_remaining-=0.1;if(state.time_remaining<=0){state.time_remaining=0;onTimeout();}updateDisplays();}
+function updateDisplays(){const frac=Math.max(0,Math.min(1,state.time_remaining/state.base_time));
+  el.timeFill.style.width=`${frac*100}%`;el.timeText.textContent=`${Math.ceil(state.time_remaining)}s`;
+  el.scoreLabel.textContent=`Puntaje: ${state.score}`;el.livesLabel.textContent=`Vidas: ${state.lives}`;}
+function onTimeout(){state.lives--;el.feedback.textContent="Tiempo agotado";if(state.lives<=0)endGame();else setTimeout(newRound,700);updateDisplays();}
 function parseUserAnswer(txt){const c=txt.replace(',','.').trim();const v=parseFloat(c);return isNaN(v)?null:v;}
 function approxEqual(a,b,t){return Math.abs(a-b)<=t;}
 function formatAnswer(ans){return Number.isInteger(ans)?ans.toString():(Math.round(ans*100)/100).toFixed(2);}
-function explainStep(){if(state.op==='+')return `${state.num1} + ${state.num2} = ${state.correct}`;if(state.op==='-')return `${state.num1} - ${state.num2} = ${state.correct}`;if(state.op==='*')return `${state.num1} × ${state.num2} = ${state.correct}`;if(state.op==='/')return `${state.num1} ÷ ${state.num2} = ${formatAnswer(state.correct)}`;if(state.op==='√')return `√${state.num1} = ${state.correct}`;}
-
+function explainStep(){if(state.op==='+')return`${state.num1} + ${state.num2} = ${state.correct}`;
+  if(state.op==='-')return`${state.num1} - ${state.num2} = ${state.correct}`;
+  if(state.op==='*')return`${state.num1} × ${state.num2} = ${state.correct}`;
+  if(state.op==='/')return`${state.num1} ÷ ${state.num2} = ${formatAnswer(state.correct)}`;
+  if(state.op==='√')return`√${state.num1} = ${state.correct}`;}
 function submitAnswer(){
-  const txt=el.answerInput.value.trim();
-  el.explain.textContent="";
+  const txt=el.answerInput.value.trim();el.explain.textContent="";
   if(!txt){el.feedback.textContent="Ingresa un número";return;}
   if(state.difficulty==='easy'&&(txt.includes('.')||txt.includes(','))){el.feedback.textContent="Número inválido (solo enteros en Fácil)";return;}
   const val=parseUserAnswer(txt);if(val===null){el.feedback.textContent="Número inválido";return;}
-  let correct=false;
-  if(state.op==='/'||state.op==='√'){correct=approxEqual(val,state.correct,0.02);}else{correct=approxEqual(val,state.correct,0.0001);}
+  let correct=false;if(state.op==='/'||state.op==='√'){correct=approxEqual(val,state.correct,0.02);}else{correct=approxEqual(val,state.correct,0.0001);}
   if(correct){state.score++;el.feedback.textContent="¡Correcto!";}else{state.lives--;el.feedback.textContent=`Incorrecto. Era ${formatAnswer(state.correct)}`;el.explain.textContent=explainStep();}
-  if(state.lives<=0){endGame();}else{setTimeout(newRound,1000);}
-  el.scoreLabel.textContent=`Puntaje: ${state.score}`;el.livesLabel.textContent=`Vidas: ${state.lives}`;
+  if(state.lives<=0){setTimeout(endGame,800);}else{setTimeout(newRound,900);}
+  updateDisplays();
 }
-
-function endGame(){el.finalScore.textContent=`Puntaje final: ${state.score}`;show(Screens.gameover);}
-function startGame(){applyDifficulty(el.difficulty.value);state.score=0;el.scoreLabel.textContent="Puntaje: 0";el.livesLabel.textContent=`Vidas: ${state.lives}`;newRound();show(Screens.game);}
+function endGame(){clearInterval(state.tickInterval);el.finalScore.textContent=`Puntaje final: ${state.score}`;show(Screens.gameover);}
+function startGame(){applyDifficulty(el.difficulty.value);state.score=0;updateDisplays();newRound();clearInterval(state.tickInterval);state.tickInterval=setInterval(tick,100);show(Screens.game);}
 
 el.playBtn.onclick=startGame;
+el.helpBtn.onclick=()=>show(Screens.help);
+el.backFromHelp.onclick=()=>show(Screens.menu);
 el.okBtn.onclick=submitAnswer;
-el.keypad.onclick=(e)=>{const d=e.target.getAttribute('data-d');if(d){el.answerInput.value+=d;}if(e.target.id==='dotBtn'){el.answerInput.value+='.';}};
 el.answerInput.onkeydown=(e)=>{if(e.key==='Enter')submitAnswer();}
 el.restartBtn.onclick=startGame;
 el.exitBtn.onclick=()=>show(Screens.menu);
 el.toMenuBtn.onclick=()=>show(Screens.menu);
 
 show(Screens.menu);
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 </script>
 </body>
 </html>

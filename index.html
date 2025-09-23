@@ -1,160 +1,228 @@
 <!doctype html>
+
 <html lang="es">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-<title>MindMath - Web</title>
+<title>MindMath — UI mejorada</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
-  body{background:#051126;color:#e6eef8;font-family:sans-serif;margin:0;}
-  .app{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:16px;}
-  .card{width:100%;max-width:500px;background:#072033;padding:20px;border-radius:12px;
-        box-shadow:0 8px 30px rgba(0,0,0,.6);}
-  h1{text-align:center;margin:0 0 16px;}
-  .hidden{display:none;}
-  .row{display:flex;gap:8px;justify-content:center;margin-top:10px;}
-  select, input, button{font-size:16px;padding:10px;border-radius:8px;border:none;}
-  button{background:#1e90ff;color:white;cursor:pointer;}
-  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.2);}
-  .status{display:flex;justify-content:space-between;margin-bottom:8px;}
-  .question{text-align:center;font-size:28px;margin:20px 0;}
-  .timebar{height:12px;width:100%;background:rgba(255,255,255,0.1);border-radius:8px;overflow:hidden;}
-  .timefill{height:100%;width:100%;background:linear-gradient(90deg,#1e90ff,#7de);}
-  .feedback{text-align:center;min-height:40px;}
-  .feedback .msg{color:#ffd380;}
-  .feedback .explain{color:#9fb3c8;font-size:14px;margin-top:4px;}
-  .gameover{text-align:center;font-size:22px;color:#ffd380;}
-</style>
+  :root{
+    --bg-1:#051026; --bg-2:#071a2b; --card:#0b2940; --accent:#6ee7ff; --accent-2:#7b61ff;
+    --muted:rgba(230,238,248,0.6); --glass:rgba(255,255,255,0.03);
+    --success:#8de27c; --danger:#ff8a80; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial; background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--muted);}
+  .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px}/* card layout */ .shell{width:100%;max-width:920px;display:grid;grid-template-columns:1fr 420px;gap:24px;align-items:stretch} @media (max-width:880px){.shell{grid-template-columns:1fr;}}
+
+.panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:var(--radius);padding:22px;box-shadow:0 12px 40px rgba(2,8,23,0.6);backdrop-filter:blur(6px)}
+
+/* left big area */ .hero{display:flex;flex-direction:column;gap:12px} .brand{display:flex;gap:12px;align-items:center} .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#042; font-weight:800;box-shadow:0 6px 30px rgba(123,97,255,0.18)} .brand h1{margin:0;color:white;font-size:20px} .brand p{margin:0;font-size:13px;color:var(--muted)}
+
+.menu{display:flex;gap:12px;align-items:center;margin-top:8px} select,input[type=range]{padding:10px 12px;border-radius:10px;border:none;background:var(--glass);color:var(--muted);} .btn{padding:10px 14px;border-radius:12px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#042;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(123,97,255,0.12)} .ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+
+/* right game card */ .gameCard{display:flex;flex-direction:column;gap:12px;padding:20px} .status{display:flex;justify-content:space-between;align-items:center} .chip{background:var(--glass);padding:8px 12px;border-radius:999px;font-weight:600;color:var(--muted);display:inline-flex;gap:8px;align-items:center}
+
+.questionBox{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));border-radius:12px;padding:18px;text-align:center;box-shadow:inset 0 -4px 20px rgba(2,8,23,0.6)} .question{font-size:34px;color:#e9fbff;margin:0} .sub{font-size:12px;color:rgba(255,255,255,0.4);margin-top:6px}
+
+.meter{height:12px;background:linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));border-radius:999px;overflow:hidden} .meter > i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width 0.12s linear}
+
+input[type=text]{width:100%;padding:12px;border-radius:10px;border:none;background:rgba(255,255,255,0.03);color:var(--muted);font-size:16px}
+
+.actions{display:flex;gap:10px;justify-content:space-between;margin-top:8px} .actions .left{display:flex;gap:8px}
+
+.feedback{min-height:44px;padding:10px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);color:var(--muted);display:flex;flex-direction:column;justify-content:center;align-items:center} .feedback .ok{color:var(--success);font-weight:700} .feedback .bad{color:var(--danger);font-weight:700} .explain{font-size:13px;color:rgba(255,255,255,0.45);margin-top:6px}
+
+/* game over */ .gameover{display:flex;flex-direction:column;align-items:center;gap:10px} .finalScore{font-size:22px;color:#fff;font-weight:700}
+
+/* small helpers */ .muted{color:rgba(255,255,255,0.45);font-size:13px} .center{display:flex;justify-content:center}
+
+/* nice micro animations */ .pulse{animation:pulse 1.8s infinite} @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
+
+footer{margin-top:18px;text-align:center;color:rgba(255,255,255,0.2);font-size:12px} </style>
+
 </head>
 <body>
-<div class="app">
+  <div class="wrap">
+    <div class="shell"><!-- LEFT: Menu & info -->
+  <div class="panel hero">
+    <div class="brand">
+      <div class="logo">MM</div>
+      <div>
+        <h1>MindMath</h1>
+        <p>Entrena rapidez mental con operaciones matemáticas. Diseño moderno y accesible.</p>
+      </div>
+    </div>
 
-  <!-- MENÚ -->
-  <div class="card" id="menuScreen">
-    <h1>MindMath</h1>
-    <label>Dificultad:</label>
-    <select id="difficulty">
-      <option>Fácil</option>
-      <option>Medio</option>
-      <option>Difícil</option>
-    </select>
-    <div class="row"><button id="playBtn">Jugar</button></div>
-    <div class="row"><button id="helpBtn" class="ghost">Instrucciones</button></div>
+    <div class="menu">
+      <label class="muted">Dificultad</label>
+      <select id="difficulty">
+        <option>Fácil</option>
+        <option selected>Medio</option>
+        <option>Difícil</option>
+      </select>
+
+      <label class="muted">Rondas</label>
+      <select id="rounds">
+        <option>Indefinido</option>
+        <option>10</option>
+        <option>20</option>
+        <option>30</option>
+      </select>
+
+      <button id="playBtn" class="btn">Jugar</button>
+    </div>
+
+    <div style="margin-top:8px;color:var(--muted);font-size:13px">Consejos: escribe la respuesta y pulsa <strong>Enter</strong> o usa el botón "Comprobar". En Fácil solo enteros.</div>
+
+    <div style="margin-top:14px;display:flex;gap:12px;flex-wrap:wrap">
+      <div class="panel" style="flex:1;min-width:180px">
+        <div class="muted">Mejor racha</div>
+        <div style="font-weight:700;font-size:18px;color:white">0</div>
+        <div class="muted" style="margin-top:6px">Puntos más altos</div>
+        <div style="font-weight:700;font-size:18px;color:white">0</div>
+      </div>
+
+      <div class="panel" style="flex:1;min-width:180px">
+        <div class="muted">Ajustes</div>
+        <div style="margin-top:8px" class="muted">Tono y retroalimentación visual activados</div>
+        <div style="margin-top:10px"><button id="helpBtn" class="ghost">Instrucciones</button></div>
+      </div>
+    </div>
+
+    <footer>Diseñado con ❤️ · Presiona "Salir" para volver al menú</footer>
   </div>
 
-  <!-- INSTRUCCIONES -->
-  <div class="card hidden" id="helpScreen">
-    <h1>Instrucciones</h1>
-    <p>• Fácil: suma y resta (solo enteros).<br>
-       • Medio: multiplicación y división.<br>
-       • Difícil: suma, resta, multiplicación, división y raíces cuadradas.<br>
-       Responde antes de que termine el tiempo. Fallar resta vidas.</p>
-    <div class="row"><button id="backFromHelp" class="ghost">Volver</button></div>
-  </div>
-
-  <!-- JUEGO -->
-  <div class="card hidden" id="gameScreen">
+  <!-- RIGHT: Game area -->
+  <div class="panel gameCard" id="gameScreen">
     <div class="status">
-      <div id="scoreLabel">Puntaje: 0</div>
-      <div id="livesLabel">Vidas: 3</div>
+      <div class="chip">Puntaje: <span id="scoreLabel">0</span></div>
+      <div class="chip">Vidas: <span id="livesLabel">3</span></div>
     </div>
-    <div style="font-size:14px;margin-bottom:6px;">Tiempo: <span id="timeText">0s</span></div>
-    <div class="question" id="questionLabel">0 × 0 = ?</div>
-    <div class="timebar"><div id="timeFill" class="timefill"></div></div>
-    <input id="answerInput" type="text" placeholder="Escribe la respuesta" style="width:100%;margin-top:10px;">
-    <div class="feedback">
-      <div class="msg" id="feedback"></div>
-      <div class="explain" id="explain"></div>
-    </div>
-    <div class="row">
-      <button id="okBtn">Comprobar</button>
-      <button id="restartBtn" class="ghost">Reiniciar</button>
-      <button id="exitBtn" class="ghost">Salir</button>
-    </div>
-  </div>
 
-  <!-- GAME OVER -->
-  <div class="card hidden" id="gameoverScreen">
-    <h1>Juego terminado</h1>
-    <div class="gameover" id="finalScore">Puntaje final: 0</div>
-    <div class="row"><button id="toMenuBtn">Volver al menú</button></div>
+    <div class="questionBox">
+      <div class="question" id="questionLabel">¿Listo?</div>
+      <div class="sub">Tiempo: <span id="timeText">0s</span></div>
+    </div>
+
+    <div class="meter" aria-hidden="true"><i id="timeFill"></i></div>
+
+    <input id="answerInput" type="text" inputmode="numeric" placeholder="Escribe la respuesta" aria-label="Respuesta">
+
+    <div class="feedback" id="feedbackBox">
+      <div id="feedback" class="muted">Buena suerte — ¡comienza cuando quieras!</div>
+      <div id="explain" class="explain"></div>
+    </div>
+
+    <div class="actions">
+      <div class="left">
+        <button id="okBtn" class="btn">Comprobar</button>
+        <button id="restartBtn" class="ghost">Reiniciar</button>
+      </div>
+      <div class="right">
+        <button id="exitBtn" class="ghost">Salir</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+      <div class="muted">Operador actual: <span id="opLabel">—</span></div>
+      <div class="muted">Rondas jugadas: <span id="roundLabel">0</span></div>
+    </div>
+
+    <div class="gameover hidden" id="gameoverScreen">
+      <div class="finalScore" id="finalScore">Puntaje final: 0</div>
+      <div><button id="toMenuBtn" class="btn">Volver al menú</button></div>
+    </div>
   </div>
 
 </div>
 
-<script>
-const Screens={menu:document.getElementById('menuScreen'),help:document.getElementById('helpScreen'),
-               game:document.getElementById('gameScreen'),gameover:document.getElementById('gameoverScreen')};
-const el={difficulty:document.getElementById('difficulty'),playBtn:document.getElementById('playBtn'),
-  helpBtn:document.getElementById('helpBtn'),backFromHelp:document.getElementById('backFromHelp'),
-  questionLabel:document.getElementById('questionLabel'),answerInput:document.getElementById('answerInput'),
-  feedback:document.getElementById('feedback'),explain:document.getElementById('explain'),
-  okBtn:document.getElementById('okBtn'),restartBtn:document.getElementById('restartBtn'),
-  exitBtn:document.getElementById('exitBtn'),scoreLabel:document.getElementById('scoreLabel'),
-  livesLabel:document.getElementById('livesLabel'),timeText:document.getElementById('timeText'),
-  timeFill:document.getElementById('timeFill'),finalScore:document.getElementById('finalScore'),
-  toMenuBtn:document.getElementById('toMenuBtn')};
+  </div><script>
+/* ====== Lógica del juego (adaptada y mejorada) ====== */
+const qs = (s)=>document.querySelector(s);
+const Screens = { game: qs('#gameScreen') };
+const el = {
+  difficulty: qs('#difficulty'), rounds: qs('#rounds'), playBtn: qs('#playBtn'), helpBtn: qs('#helpBtn'),
+  questionLabel: qs('#questionLabel'), answerInput: qs('#answerInput'), feedback: qs('#feedback'), explain: qs('#explain'),
+  okBtn: qs('#okBtn'), restartBtn: qs('#restartBtn'), exitBtn: qs('#exitBtn'), scoreLabel: qs('#scoreLabel'), livesLabel: qs('#livesLabel'),
+  timeText: qs('#timeText'), timeFill: qs('#timeFill'), opLabel: qs('#opLabel'), roundLabel: qs('#roundLabel'), finalScore: qs('#finalScore'), gameoverScreen: qs('#gameoverScreen'), toMenuBtn: qs('#toMenuBtn')
+};
 
-const state={difficulty:'medium',range_max:10,base_time:10,lives:3,score:0,time_remaining:0,max_time:10,
-             num1:0,num2:0,correct:0,op:'*',tickInterval:null};
+const state = { difficulty:'medium', range_max:12, base_time:10, lives:3, score:0, time_remaining:0, num1:0,num2:0,correct:0,op:'*',tickInterval:null, roundsPlayed:0 };
 
-function show(s){for(const k in Screens)Screens[k].classList.add('hidden');s.classList.remove('hidden');}
 function applyDifficulty(name){
   if(name==='Fácil'){state.range_max=8;state.base_time=12;state.lives=5;state.difficulty='easy';}
   else if(name==='Difícil'){state.range_max=20;state.base_time=7;state.lives=2;state.difficulty='hard';}
-  else{state.range_max=12;state.base_time=10;state.lives=3;state.difficulty='medium';}
+  else {state.range_max=12;state.base_time=10;state.lives=3;state.difficulty='medium';}
 }
 function pickOperator(){
   if(state.difficulty==='easy') return Math.random()<0.5?'+':'-';
   if(state.difficulty==='hard'){const arr=['+','-','*','/','√'];return arr[Math.floor(Math.random()*arr.length)];}
   return Math.random()<0.5?'*':'/';
 }
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+
+function formatAnswer(ans){return Number.isInteger(ans)?ans.toString():(Math.round(ans*100)/100).toFixed(2);}
+function approxEqual(a,b,t){return Math.abs(a-b)<=t;}
+function explainStep(){if(state.op==='+')return`${state.num1} + ${state.num2} = ${state.correct}`;
+  if(state.op==='-')return`${state.num1} - ${state.num2} = ${state.correct}`;
+  if(state.op==='*')return`${state.num1} × ${state.num2} = ${state.correct}`;
+  if(state.op==='/')return`${state.num1} ÷ ${state.num2} = ${formatAnswer(state.correct)}`;
+  if(state.op==='√')return`√${state.num1} = ${state.correct}`;
+}
+
 function newRound(){
-  state.op=pickOperator();
+  state.op = pickOperator(); state.roundsPlayed++;
+  el.opLabel.textContent = state.op;
   if(state.op==='+'){state.num1=rand(1,state.range_max);state.num2=rand(1,state.range_max);state.correct=state.num1+state.num2;el.questionLabel.textContent=`${state.num1} + ${state.num2} = ?`;}
   if(state.op==='-'){let a=rand(1,state.range_max),b=rand(1,state.range_max);if(b>a)[a,b]=[b,a];state.num1=a;state.num2=b;state.correct=a-b;el.questionLabel.textContent=`${a} - ${b} = ?`;}
   if(state.op==='*'){state.num1=rand(1,state.range_max);state.num2=rand(1,state.range_max);state.correct=state.num1*state.num2;el.questionLabel.textContent=`${state.num1} × ${state.num2} = ?`;}
   if(state.op==='/'){state.num2=rand(1,state.range_max);state.num1=state.num2*rand(1,state.range_max);state.correct=state.num1/state.num2;el.questionLabel.textContent=`${state.num1} ÷ ${state.num2} = ?`;}
   if(state.op==='√'){const r=rand(2,10);state.num1=r*r;state.correct=r;el.questionLabel.textContent=`√${state.num1} = ?`;}
-  state.time_remaining=state.base_time;
-  el.answerInput.value="";el.feedback.textContent="";el.explain.textContent="";
+
+  state.time_remaining = state.base_time; el.answerInput.value=''; el.feedback.textContent=''; el.explain.textContent=''; updateDisplays();
 }
-function tick(){state.time_remaining-=0.1;if(state.time_remaining<=0){state.time_remaining=0;onTimeout();}updateDisplays();}
-function updateDisplays(){const frac=Math.max(0,Math.min(1,state.time_remaining/state.base_time));
-  el.timeFill.style.width=`${frac*100}%`;el.timeText.textContent=`${Math.ceil(state.time_remaining)}s`;
-  el.scoreLabel.textContent=`Puntaje: ${state.score}`;el.livesLabel.textContent=`Vidas: ${state.lives}`;}
-function onTimeout(){state.lives--;el.feedback.textContent="Tiempo agotado";if(state.lives<=0)endGame();else setTimeout(newRound,700);updateDisplays();}
-function parseUserAnswer(txt){const c=txt.replace(',','.').trim();const v=parseFloat(c);return isNaN(v)?null:v;}
-function approxEqual(a,b,t){return Math.abs(a-b)<=t;}
-function formatAnswer(ans){return Number.isInteger(ans)?ans.toString():(Math.round(ans*100)/100).toFixed(2);}
-function explainStep(){if(state.op==='+')return`${state.num1} + ${state.num2} = ${state.correct}`;
-  if(state.op==='-')return`${state.num1} - ${state.num2} = ${state.correct}`;
-  if(state.op==='*')return`${state.num1} × ${state.num2} = ${state.correct}`;
-  if(state.op==='/')return`${state.num1} ÷ ${state.num2} = ${formatAnswer(state.correct)}`;
-  if(state.op==='√')return`√${state.num1} = ${state.correct}`;}
-function submitAnswer(){
-  const txt=el.answerInput.value.trim();el.explain.textContent="";
-  if(!txt){el.feedback.textContent="Ingresa un número";return;}
-  if(state.difficulty==='easy'&&(txt.includes('.')||txt.includes(','))){el.feedback.textContent="Número inválido (solo enteros en Fácil)";return;}
-  const val=parseUserAnswer(txt);if(val===null){el.feedback.textContent="Número inválido";return;}
-  let correct=false;if(state.op==='/'||state.op==='√'){correct=approxEqual(val,state.correct,0.02);}else{correct=approxEqual(val,state.correct,0.0001);}
-  if(correct){state.score++;el.feedback.textContent="¡Correcto!";}else{state.lives--;el.feedback.textContent=`Incorrecto. Era ${formatAnswer(state.correct)}`;el.explain.textContent=explainStep();}
-  if(state.lives<=0){setTimeout(endGame,800);}else{setTimeout(newRound,900);}
+
+function tick(){ state.time_remaining -= 0.1; if(state.time_remaining<=0){ state.time_remaining=0; onTimeout(); } updateDisplays(); }
+function updateDisplays(){ const frac=Math.max(0,Math.min(1,state.time_remaining/state.base_time)); el.timeFill.style.width = (frac*100)+'%'; el.timeText.textContent = Math.ceil(state.time_remaining)+'s'; el.scoreLabel.textContent = state.score; el.livesLabel.textContent = state.lives; el.roundLabel.textContent = state.roundsPlayed; }
+
+function onTimeout(){ state.lives--; el.feedback.textContent = 'Tiempo agotado'; el.feedback.className='muted'; el.explain.textContent = explainStep(); if(state.lives<=0){ endGame(); } else { setTimeout(newRound,800); } updateDisplays(); }
+
+function parseUserAnswer(txt){ const c = txt.replace(',','.').trim(); const v = parseFloat(c); return isNaN(v)?null:v; }
+
+function submitAnswer(){ const txt = el.answerInput.value.trim(); el.explain.textContent = '';
+  if(!txt){ el.feedback.textContent='Ingresa un número'; el.feedback.className='muted'; return; }
+  if(state.difficulty==='easy'&&(txt.includes('.')||txt.includes(','))){ el.feedback.textContent='Número inválido (solo enteros en Fácil)'; el.feedback.className='muted'; return; }
+  const val = parseUserAnswer(txt); if(val===null){ el.feedback.textContent='Número inválido'; el.feedback.className='muted'; return; }
+
+  let correct=false; if(state.op==='/'||state.op==='√'){ correct = approxEqual(val,state.correct,0.02); } else { correct = approxEqual(val,state.correct,0.0001); }
+  if(correct){ state.score++; el.feedback.textContent='¡Correcto!'; el.feedback.className='ok'; }
+  else { state.lives--; el.feedback.textContent=`Incorrecto. Era ${formatAnswer(state.correct)}`; el.feedback.className='bad'; el.explain.textContent = explainStep(); }
+  if(state.lives<=0){ setTimeout(endGame,700); } else { setTimeout(newRound,800); }
   updateDisplays();
 }
-function endGame(){clearInterval(state.tickInterval);el.finalScore.textContent=`Puntaje final: ${state.score}`;show(Screens.gameover);}
-function startGame(){applyDifficulty(el.difficulty.value);state.score=0;updateDisplays();newRound();clearInterval(state.tickInterval);state.tickInterval=setInterval(tick,100);show(Screens.game);}
 
-el.playBtn.onclick=startGame;
-el.helpBtn.onclick=()=>show(Screens.help);
-el.backFromHelp.onclick=()=>show(Screens.menu);
-el.okBtn.onclick=submitAnswer;
-el.answerInput.onkeydown=(e)=>{if(e.key==='Enter')submitAnswer();}
-el.restartBtn.onclick=startGame;
-el.exitBtn.onclick=()=>show(Screens.menu);
-el.toMenuBtn.onclick=()=>show(Screens.menu);
+function endGame(){ clearInterval(state.tickInterval); el.finalScore.textContent = 'Puntaje final: '+state.score; el.gameoverScreen.classList.remove('hidden'); }
 
-show(Screens.menu);
-function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
-</script>
-</body>
+function startGame(){ applyDifficulty(el.difficulty.value); state.score=0; state.lives = state.lives; state.roundsPlayed=0; updateDisplays(); newRound(); clearInterval(state.tickInterval); state.tickInterval = setInterval(tick,100); el.gameoverScreen.classList.add('hidden'); el.answerInput.focus(); }
+
+/* hook up UI */
+el.playBtn.addEventListener('click', ()=>{ applyDifficulty(el.difficulty.value); // reset lives according to difficulty
+  if(el.difficulty.value==='Fácil') state.lives=5; else if(el.difficulty.value==='Difícil') state.lives=2; else state.lives=3; startGame(); });
+el.helpBtn.addEventListener('click', ()=>{ alert('Instrucciones:\n• Fácil: suma y resta (solo enteros).\n• Medio: multiplicación y división.\n• Difícil: incluye raíces cuadradas.\nResponde antes de que termine el tiempo. Fallar resta vidas.'); });
+el.okBtn.addEventListener('click', submitAnswer);
+el.answerInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') submitAnswer(); });
+el.restartBtn.addEventListener('click', ()=>{ // restart keeping difficulty
+  if(confirm('Reiniciar partida?')){ startGame(); } });
+el.exitBtn.addEventListener('click', ()=>{ if(confirm('Salir al menú?')){ clearInterval(state.tickInterval); // reset UI
+  state.score=0; state.lives= (el.difficulty.value==='Fácil'?5:(el.difficulty.value==='Difícil'?2:3)); state.time_remaining=0; updateDisplays(); el.questionLabel.textContent='¿Listo?'; el.feedback.textContent='Presiona Jugar para comenzar'; el.opLabel.textContent='—'; } });
+
+// graceful focus & accessibility
+el.answerInput.addEventListener('focus', ()=>{ el.answerInput.style.outline='2px solid rgba(110,231,255,0.08)'; });
+el.answerInput.addEventListener('blur', ()=>{ el.answerInput.style.outline='none'; });
+
+// initial state
+state.time_remaining = 0; updateDisplays();
+</script></body>
 </html>

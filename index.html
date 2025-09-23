@@ -1,228 +1,218 @@
-<!doctype html>
-
-<html lang="es">
+<!DOCTYPE html><html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0" />
-<title>MindMath — UI mejorada</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg-1:#051026; --bg-2:#071a2b; --card:#0b2940; --accent:#6ee7ff; --accent-2:#7b61ff;
-    --muted:rgba(230,238,248,0.6); --glass:rgba(255,255,255,0.03);
-    --success:#8de27c; --danger:#ff8a80; --radius:14px;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial; background:linear-gradient(180deg,var(--bg-1),var(--bg-2));color:var(--muted);}
-  .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px}/* card layout */ .shell{width:100%;max-width:920px;display:grid;grid-template-columns:1fr 420px;gap:24px;align-items:stretch} @media (max-width:880px){.shell{grid-template-columns:1fr;}}
-
-.panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:var(--radius);padding:22px;box-shadow:0 12px 40px rgba(2,8,23,0.6);backdrop-filter:blur(6px)}
-
-/* left big area */ .hero{display:flex;flex-direction:column;gap:12px} .brand{display:flex;gap:12px;align-items:center} .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:#042; font-weight:800;box-shadow:0 6px 30px rgba(123,97,255,0.18)} .brand h1{margin:0;color:white;font-size:20px} .brand p{margin:0;font-size:13px;color:var(--muted)}
-
-.menu{display:flex;gap:12px;align-items:center;margin-top:8px} select,input[type=range]{padding:10px 12px;border-radius:10px;border:none;background:var(--glass);color:var(--muted);} .btn{padding:10px 14px;border-radius:12px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#042;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(123,97,255,0.12)} .ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-
-/* right game card */ .gameCard{display:flex;flex-direction:column;gap:12px;padding:20px} .status{display:flex;justify-content:space-between;align-items:center} .chip{background:var(--glass);padding:8px 12px;border-radius:999px;font-weight:600;color:var(--muted);display:inline-flex;gap:8px;align-items:center}
-
-.questionBox{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));border-radius:12px;padding:18px;text-align:center;box-shadow:inset 0 -4px 20px rgba(2,8,23,0.6)} .question{font-size:34px;color:#e9fbff;margin:0} .sub{font-size:12px;color:rgba(255,255,255,0.4);margin-top:6px}
-
-.meter{height:12px;background:linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));border-radius:999px;overflow:hidden} .meter > i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width 0.12s linear}
-
-input[type=text]{width:100%;padding:12px;border-radius:10px;border:none;background:rgba(255,255,255,0.03);color:var(--muted);font-size:16px}
-
-.actions{display:flex;gap:10px;justify-content:space-between;margin-top:8px} .actions .left{display:flex;gap:8px}
-
-.feedback{min-height:44px;padding:10px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);color:var(--muted);display:flex;flex-direction:column;justify-content:center;align-items:center} .feedback .ok{color:var(--success);font-weight:700} .feedback .bad{color:var(--danger);font-weight:700} .explain{font-size:13px;color:rgba(255,255,255,0.45);margin-top:6px}
-
-/* game over */ .gameover{display:flex;flex-direction:column;align-items:center;gap:10px} .finalScore{font-size:22px;color:#fff;font-weight:700}
-
-/* small helpers */ .muted{color:rgba(255,255,255,0.45);font-size:13px} .center{display:flex;justify-content:center}
-
-/* nice micro animations */ .pulse{animation:pulse 1.8s infinite} @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
-
-footer{margin-top:18px;text-align:center;color:rgba(255,255,255,0.2);font-size:12px} </style>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindMath - Juegos</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+      overflow-x: hidden;
+    }
+    .loading-screen {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #222;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      font-size: 1.5em;
+      z-index: 1000;
+    }
+    .loading-bar {
+      margin-top: 20px;
+      width: 200px;
+      height: 10px;
+      background: #555;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .loading-fill {
+      width: 0;
+      height: 100%;
+      background: #4CAF50;
+      animation: fill 3s forwards;
+    }
+    @keyframes fill {
+      to { width: 100%; }
+    }
+    .menu {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    .menu h1 {
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      max-width: 500px;
+      margin: auto;
+    }
+    .icon-btn {
+      background: #fff;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: transform 0.3s;
+      animation: pulse 2s infinite;
+    }
+    .icon-btn:hover {
+      transform: scale(1.1) rotate(3deg);
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 10px #fff; }
+      50% { box-shadow: 0 0 20px #4CAF50; }
+      100% { box-shadow: 0 0 10px #fff; }
+    }
+    .game-screen {
+      display: none;
+      padding: 20px;
+      text-align: center;
+    }
+    .back-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      border: none;
+      background: #ff5722;
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="shell"><!-- LEFT: Menu & info -->
-  <div class="panel hero">
-    <div class="brand">
-      <div class="logo">MM</div>
-      <div>
-        <h1>MindMath</h1>
-        <p>Entrena rapidez mental con operaciones matemáticas. Diseño moderno y accesible.</p>
-      </div>
+  <div class="loading-screen">
+    <div>Cargando MindMath...</div>
+    <div class="loading-bar"><div class="loading-fill"></div></div>
+  </div>  <div class="menu">
+    <h1>MindMath 🎮</h1>
+    <div class="menu-grid">
+      <div class="icon-btn" onclick="openGame('memoria')">🧠 Memoria</div>
+      <div class="icon-btn" onclick="openGame('calculo')">⚡ Cálculo Rápido</div>
+      <div class="icon-btn" onclick="openGame('sudoku')">🔢 Sudoku Infantil</div>
+      <div class="icon-btn" onclick="openGame('suma')">➕ Suma Simple</div>
+      <div class="icon-btn" onclick="openGame('explicacion')">📘 Explicación</div>
     </div>
+  </div>  <!-- Pantallas de minijuegos -->  <div id="memoria" class="game-screen">
+    <h2>Juego de Memoria</h2>
+    <p>Recuerda este número: <strong id="mem-num"></strong></p>
+    <input type="text" id="mem-input" placeholder="Escríbelo aquí" />
+    <button onclick="checkMemoria()">Comprobar</button>
+    <p id="mem-result"></p>
+    <button class="back-btn" onclick="goBack()">Volver</button>
+  </div>  <div id="calculo" class="game-screen">
+    <h2>Cálculo Rápido</h2>
+    <p id="calc-question"></p>
+    <input type="number" id="calc-input" />
+    <button onclick="checkCalculo()">Responder</button>
+    <p id="calc-result"></p>
+    <button class="back-btn" onclick="goBack()">Volver</button>
+  </div>  <div id="sudoku" class="game-screen">
+    <h2>Sudoku Infantil</h2>
+    <p>Rellena la cuadrícula 4x4 con números del 1 al 4.</p>
+    <table border="1" style="margin:auto;">
+      <tbody id="sudoku-grid"></tbody>
+    </table>
+    <button class="back-btn" onclick="goBack()">Volver</button>
+  </div>  <div id="suma" class="game-screen">
+    <h2>Suma Simple</h2>
+    <p id="suma-question"></p>
+    <input type="number" id="suma-input" />
+    <button onclick="checkSuma()">Responder</button>
+    <p id="suma-result"></p>
+    <button class="back-btn" onclick="goBack()">Volver</button>
+  </div>  <div id="explicacion" class="game-screen">
+    <h2>Explicación de los Juegos</h2>
+    <ul style="text-align:left; max-width:400px; margin:auto;">
+      <li><b>Memoria:</b> recuerda un número y escríbelo después.</li>
+      <li><b>Cálculo rápido:</b> resuelve multiplicaciones contra el reloj.</li>
+      <li><b>Sudoku Infantil:</b> llena una cuadrícula con números simples.</li>
+      <li><b>Suma simple:</b> suma números pequeños.</li>
+    </ul>
+    <button class="back-btn" onclick="goBack()">Volver</button>
+  </div>  <script>
+    // Pantalla de carga
+    setTimeout(()=>{
+      document.querySelector('.loading-screen').style.display = 'none';
+      document.querySelector('.menu').style.display = 'block';
+    }, 3100);
 
-    <div class="menu">
-      <label class="muted">Dificultad</label>
-      <select id="difficulty">
-        <option>Fácil</option>
-        <option selected>Medio</option>
-        <option>Difícil</option>
-      </select>
+    function openGame(id){
+      document.querySelector('.menu').style.display = 'none';
+      document.getElementById(id).style.display = 'block';
+      if(id==='memoria'){ startMemoria(); }
+      if(id==='calculo'){ startCalculo(); }
+      if(id==='suma'){ startSuma(); }
+      if(id==='sudoku'){ buildSudoku(); }
+    }
+    function goBack(){
+      document.querySelectorAll('.game-screen').forEach(s=>s.style.display='none');
+      document.querySelector('.menu').style.display = 'block';
+    }
 
-      <label class="muted">Rondas</label>
-      <select id="rounds">
-        <option>Indefinido</option>
-        <option>10</option>
-        <option>20</option>
-        <option>30</option>
-      </select>
+    // Memoria
+    let memNum;
+    function startMemoria(){
+      memNum = Math.floor(Math.random()*900+100);
+      document.getElementById('mem-num').innerText = memNum;
+      setTimeout(()=>{ document.getElementById('mem-num').innerText='???'; },2000);
+    }
+    function checkMemoria(){
+      let val = document.getElementById('mem-input').value;
+      document.getElementById('mem-result').innerText = val==memNum ? '✅ Correcto' : '❌ Intenta otra vez';
+    }
 
-      <button id="playBtn" class="btn">Jugar</button>
-    </div>
+    // Calculo rapido
+    let calcAns;
+    function startCalculo(){
+      let a = Math.floor(Math.random()*10);
+      let b = Math.floor(Math.random()*10);
+      calcAns = a*b;
+      document.getElementById('calc-question').innerText = `${a} × ${b} = ?`;
+    }
+    function checkCalculo(){
+      let val = document.getElementById('calc-input').value;
+      document.getElementById('calc-result').innerText = val==calcAns ? '✅ Bien hecho!' : '❌ Incorrecto';
+    }
 
-    <div style="margin-top:8px;color:var(--muted);font-size:13px">Consejos: escribe la respuesta y pulsa <strong>Enter</strong> o usa el botón "Comprobar". En Fácil solo enteros.</div>
+    // Suma simple
+    let sumaAns;
+    function startSuma(){
+      let a = Math.floor(Math.random()*10);
+      let b = Math.floor(Math.random()*10);
+      sumaAns = a+b;
+      document.getElementById('suma-question').innerText = `${a} + ${b} = ?`;
+    }
+    function checkSuma(){
+      let val = document.getElementById('suma-input').value;
+      document.getElementById('suma-result').innerText = val==sumaAns ? '✅ Correcto!' : '❌ Incorrecto';
+    }
 
-    <div style="margin-top:14px;display:flex;gap:12px;flex-wrap:wrap">
-      <div class="panel" style="flex:1;min-width:180px">
-        <div class="muted">Mejor racha</div>
-        <div style="font-weight:700;font-size:18px;color:white">0</div>
-        <div class="muted" style="margin-top:6px">Puntos más altos</div>
-        <div style="font-weight:700;font-size:18px;color:white">0</div>
-      </div>
-
-      <div class="panel" style="flex:1;min-width:180px">
-        <div class="muted">Ajustes</div>
-        <div style="margin-top:8px" class="muted">Tono y retroalimentación visual activados</div>
-        <div style="margin-top:10px"><button id="helpBtn" class="ghost">Instrucciones</button></div>
-      </div>
-    </div>
-
-    <footer>Diseñado con ❤️ · Presiona "Salir" para volver al menú</footer>
-  </div>
-
-  <!-- RIGHT: Game area -->
-  <div class="panel gameCard" id="gameScreen">
-    <div class="status">
-      <div class="chip">Puntaje: <span id="scoreLabel">0</span></div>
-      <div class="chip">Vidas: <span id="livesLabel">3</span></div>
-    </div>
-
-    <div class="questionBox">
-      <div class="question" id="questionLabel">¿Listo?</div>
-      <div class="sub">Tiempo: <span id="timeText">0s</span></div>
-    </div>
-
-    <div class="meter" aria-hidden="true"><i id="timeFill"></i></div>
-
-    <input id="answerInput" type="text" inputmode="numeric" placeholder="Escribe la respuesta" aria-label="Respuesta">
-
-    <div class="feedback" id="feedbackBox">
-      <div id="feedback" class="muted">Buena suerte — ¡comienza cuando quieras!</div>
-      <div id="explain" class="explain"></div>
-    </div>
-
-    <div class="actions">
-      <div class="left">
-        <button id="okBtn" class="btn">Comprobar</button>
-        <button id="restartBtn" class="ghost">Reiniciar</button>
-      </div>
-      <div class="right">
-        <button id="exitBtn" class="ghost">Salir</button>
-      </div>
-    </div>
-
-    <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
-      <div class="muted">Operador actual: <span id="opLabel">—</span></div>
-      <div class="muted">Rondas jugadas: <span id="roundLabel">0</span></div>
-    </div>
-
-    <div class="gameover hidden" id="gameoverScreen">
-      <div class="finalScore" id="finalScore">Puntaje final: 0</div>
-      <div><button id="toMenuBtn" class="btn">Volver al menú</button></div>
-    </div>
-  </div>
-
-</div>
-
-  </div><script>
-/* ====== Lógica del juego (adaptada y mejorada) ====== */
-const qs = (s)=>document.querySelector(s);
-const Screens = { game: qs('#gameScreen') };
-const el = {
-  difficulty: qs('#difficulty'), rounds: qs('#rounds'), playBtn: qs('#playBtn'), helpBtn: qs('#helpBtn'),
-  questionLabel: qs('#questionLabel'), answerInput: qs('#answerInput'), feedback: qs('#feedback'), explain: qs('#explain'),
-  okBtn: qs('#okBtn'), restartBtn: qs('#restartBtn'), exitBtn: qs('#exitBtn'), scoreLabel: qs('#scoreLabel'), livesLabel: qs('#livesLabel'),
-  timeText: qs('#timeText'), timeFill: qs('#timeFill'), opLabel: qs('#opLabel'), roundLabel: qs('#roundLabel'), finalScore: qs('#finalScore'), gameoverScreen: qs('#gameoverScreen'), toMenuBtn: qs('#toMenuBtn')
-};
-
-const state = { difficulty:'medium', range_max:12, base_time:10, lives:3, score:0, time_remaining:0, num1:0,num2:0,correct:0,op:'*',tickInterval:null, roundsPlayed:0 };
-
-function applyDifficulty(name){
-  if(name==='Fácil'){state.range_max=8;state.base_time=12;state.lives=5;state.difficulty='easy';}
-  else if(name==='Difícil'){state.range_max=20;state.base_time=7;state.lives=2;state.difficulty='hard';}
-  else {state.range_max=12;state.base_time=10;state.lives=3;state.difficulty='medium';}
-}
-function pickOperator(){
-  if(state.difficulty==='easy') return Math.random()<0.5?'+':'-';
-  if(state.difficulty==='hard'){const arr=['+','-','*','/','√'];return arr[Math.floor(Math.random()*arr.length)];}
-  return Math.random()<0.5?'*':'/';
-}
-function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
-
-function formatAnswer(ans){return Number.isInteger(ans)?ans.toString():(Math.round(ans*100)/100).toFixed(2);}
-function approxEqual(a,b,t){return Math.abs(a-b)<=t;}
-function explainStep(){if(state.op==='+')return`${state.num1} + ${state.num2} = ${state.correct}`;
-  if(state.op==='-')return`${state.num1} - ${state.num2} = ${state.correct}`;
-  if(state.op==='*')return`${state.num1} × ${state.num2} = ${state.correct}`;
-  if(state.op==='/')return`${state.num1} ÷ ${state.num2} = ${formatAnswer(state.correct)}`;
-  if(state.op==='√')return`√${state.num1} = ${state.correct}`;
-}
-
-function newRound(){
-  state.op = pickOperator(); state.roundsPlayed++;
-  el.opLabel.textContent = state.op;
-  if(state.op==='+'){state.num1=rand(1,state.range_max);state.num2=rand(1,state.range_max);state.correct=state.num1+state.num2;el.questionLabel.textContent=`${state.num1} + ${state.num2} = ?`;}
-  if(state.op==='-'){let a=rand(1,state.range_max),b=rand(1,state.range_max);if(b>a)[a,b]=[b,a];state.num1=a;state.num2=b;state.correct=a-b;el.questionLabel.textContent=`${a} - ${b} = ?`;}
-  if(state.op==='*'){state.num1=rand(1,state.range_max);state.num2=rand(1,state.range_max);state.correct=state.num1*state.num2;el.questionLabel.textContent=`${state.num1} × ${state.num2} = ?`;}
-  if(state.op==='/'){state.num2=rand(1,state.range_max);state.num1=state.num2*rand(1,state.range_max);state.correct=state.num1/state.num2;el.questionLabel.textContent=`${state.num1} ÷ ${state.num2} = ?`;}
-  if(state.op==='√'){const r=rand(2,10);state.num1=r*r;state.correct=r;el.questionLabel.textContent=`√${state.num1} = ?`;}
-
-  state.time_remaining = state.base_time; el.answerInput.value=''; el.feedback.textContent=''; el.explain.textContent=''; updateDisplays();
-}
-
-function tick(){ state.time_remaining -= 0.1; if(state.time_remaining<=0){ state.time_remaining=0; onTimeout(); } updateDisplays(); }
-function updateDisplays(){ const frac=Math.max(0,Math.min(1,state.time_remaining/state.base_time)); el.timeFill.style.width = (frac*100)+'%'; el.timeText.textContent = Math.ceil(state.time_remaining)+'s'; el.scoreLabel.textContent = state.score; el.livesLabel.textContent = state.lives; el.roundLabel.textContent = state.roundsPlayed; }
-
-function onTimeout(){ state.lives--; el.feedback.textContent = 'Tiempo agotado'; el.feedback.className='muted'; el.explain.textContent = explainStep(); if(state.lives<=0){ endGame(); } else { setTimeout(newRound,800); } updateDisplays(); }
-
-function parseUserAnswer(txt){ const c = txt.replace(',','.').trim(); const v = parseFloat(c); return isNaN(v)?null:v; }
-
-function submitAnswer(){ const txt = el.answerInput.value.trim(); el.explain.textContent = '';
-  if(!txt){ el.feedback.textContent='Ingresa un número'; el.feedback.className='muted'; return; }
-  if(state.difficulty==='easy'&&(txt.includes('.')||txt.includes(','))){ el.feedback.textContent='Número inválido (solo enteros en Fácil)'; el.feedback.className='muted'; return; }
-  const val = parseUserAnswer(txt); if(val===null){ el.feedback.textContent='Número inválido'; el.feedback.className='muted'; return; }
-
-  let correct=false; if(state.op==='/'||state.op==='√'){ correct = approxEqual(val,state.correct,0.02); } else { correct = approxEqual(val,state.correct,0.0001); }
-  if(correct){ state.score++; el.feedback.textContent='¡Correcto!'; el.feedback.className='ok'; }
-  else { state.lives--; el.feedback.textContent=`Incorrecto. Era ${formatAnswer(state.correct)}`; el.feedback.className='bad'; el.explain.textContent = explainStep(); }
-  if(state.lives<=0){ setTimeout(endGame,700); } else { setTimeout(newRound,800); }
-  updateDisplays();
-}
-
-function endGame(){ clearInterval(state.tickInterval); el.finalScore.textContent = 'Puntaje final: '+state.score; el.gameoverScreen.classList.remove('hidden'); }
-
-function startGame(){ applyDifficulty(el.difficulty.value); state.score=0; state.lives = state.lives; state.roundsPlayed=0; updateDisplays(); newRound(); clearInterval(state.tickInterval); state.tickInterval = setInterval(tick,100); el.gameoverScreen.classList.add('hidden'); el.answerInput.focus(); }
-
-/* hook up UI */
-el.playBtn.addEventListener('click', ()=>{ applyDifficulty(el.difficulty.value); // reset lives according to difficulty
-  if(el.difficulty.value==='Fácil') state.lives=5; else if(el.difficulty.value==='Difícil') state.lives=2; else state.lives=3; startGame(); });
-el.helpBtn.addEventListener('click', ()=>{ alert('Instrucciones:\n• Fácil: suma y resta (solo enteros).\n• Medio: multiplicación y división.\n• Difícil: incluye raíces cuadradas.\nResponde antes de que termine el tiempo. Fallar resta vidas.'); });
-el.okBtn.addEventListener('click', submitAnswer);
-el.answerInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') submitAnswer(); });
-el.restartBtn.addEventListener('click', ()=>{ // restart keeping difficulty
-  if(confirm('Reiniciar partida?')){ startGame(); } });
-el.exitBtn.addEventListener('click', ()=>{ if(confirm('Salir al menú?')){ clearInterval(state.tickInterval); // reset UI
-  state.score=0; state.lives= (el.difficulty.value==='Fácil'?5:(el.difficulty.value==='Difícil'?2:3)); state.time_remaining=0; updateDisplays(); el.questionLabel.textContent='¿Listo?'; el.feedback.textContent='Presiona Jugar para comenzar'; el.opLabel.textContent='—'; } });
-
-// graceful focus & accessibility
-el.answerInput.addEventListener('focus', ()=>{ el.answerInput.style.outline='2px solid rgba(110,231,255,0.08)'; });
-el.answerInput.addEventListener('blur', ()=>{ el.answerInput.style.outline='none'; });
-
-// initial state
-state.time_remaining = 0; updateDisplays();
-</script></body>
+    // Sudoku 4x4 básico
+    function buildSudoku(){
+      let grid = document.getElementById('sudoku-grid');
+      grid.innerHTML = '';
+      for(let i=0;i<4;i++){
+        let row = document.createElement('tr');
+        for(let j=0;j<4;j++){
+          let cell = document.createElement('td');
+          let input = document.createElement('input');
+          input.type='number';
+          input.min=1; input.max=4;
+          input.style.width='40px';
+          cell.appendChild(input);
+          row.appendChild(cell);
+        }
+        grid.appendChild(row);
+      }
+    }
+  </script></body>
 </html>

@@ -1,218 +1,529 @@
-<!DOCTYPE html><html lang="es">
+<!doctype html>
+<html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MindMath - Juegos</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
-      overflow-x: hidden;
-    }
-    .loading-screen {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: #222;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      font-size: 1.5em;
-      z-index: 1000;
-    }
-    .loading-bar {
-      margin-top: 20px;
-      width: 200px;
-      height: 10px;
-      background: #555;
-      border-radius: 5px;
-      overflow: hidden;
-    }
-    .loading-fill {
-      width: 0;
-      height: 100%;
-      background: #4CAF50;
-      animation: fill 3s forwards;
-    }
-    @keyframes fill {
-      to { width: 100%; }
-    }
-    .menu {
-      display: none;
-      text-align: center;
-      padding: 20px;
-    }
-    .menu h1 {
-      color: #fff;
-      margin-bottom: 20px;
-    }
-    .menu-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-      max-width: 500px;
-      margin: auto;
-    }
-    .icon-btn {
-      background: #fff;
-      border-radius: 20px;
-      padding: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      cursor: pointer;
-      transition: transform 0.3s;
-      animation: pulse 2s infinite;
-    }
-    .icon-btn:hover {
-      transform: scale(1.1) rotate(3deg);
-    }
-    @keyframes pulse {
-      0% { box-shadow: 0 0 10px #fff; }
-      50% { box-shadow: 0 0 20px #4CAF50; }
-      100% { box-shadow: 0 0 10px #fff; }
-    }
-    .game-screen {
-      display: none;
-      padding: 20px;
-      text-align: center;
-    }
-    .back-btn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      border: none;
-      background: #ff5722;
-      color: #fff;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
+<title>MindMath — MiniJuegos</title>
+<style>
+  :root{
+    --bg1: #0b2540; --bg2:#0a6fb2; --accent:#ffd54a; --panel:#0f466e;
+    --card:#06304a; --btn:#ff8a65; --good:#7ee7a6; --bad:#ff8a80;
+    --glass: rgba(255,255,255,0.06);
+  }
+  *{box-sizing:border-box;font-family:Inter, "Segoe UI", Roboto, Arial, sans-serif}
+  body{
+    margin:0; min-height:100vh; background:linear-gradient(180deg,var(--bg1),var(--bg2));
+    color:#fff; display:flex; align-items:flex-end; justify-content:center;
+  }
+  /* Container simula pantalla de juego */
+  .screen{
+    width:100%; max-width:480px; height:100vh; position:relative; overflow:hidden;
+    display:flex; flex-direction:column; align-items:stretch;
+    background-image: url(''); /* keep for future bg art */ 
+  }
+
+  /* Top HUD */
+  .hud{
+    display:flex; justify-content:space-between; align-items:center; padding:14px 16px;
+    gap:8px;
+  }
+  .coinbox{
+    background:var(--glass); padding:8px 12px; border-radius:16px; display:flex; gap:8px; align-items:center;
+    font-weight:700; color:#fff;
+  }
+
+  /* central area */
+  .stage{
+    flex:1; display:flex; align-items:center; justify-content:center; position:relative;
+    padding:8px 16px;
+  }
+  .card{
+    width:100%; max-width:420px; background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    border-radius:16px; padding:14px; box-shadow:0 12px 40px rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+  }
+
+  /* Loading big */
+  #loading{
+    position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center;
+    background: linear-gradient(180deg, rgba(2,6,23,0.9), rgba(2,6,23,0.7)); z-index:60;
+  }
+  .loader{
+    width:84px; height:84px; border-radius:50%; border:8px solid rgba(255,255,255,0.08); border-top-color:var(--accent);
+    animation:spin 1s linear infinite; margin-bottom:12px;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Bottom bar with big icons (like Subway Surfers) */
+  .bottom-bar{
+    display:flex; gap:8px; padding:12px; background:linear-gradient(180deg, rgba(0,0,0,0.12), rgba(0,0,0,0.18));
+    align-items:center; justify-content:space-around; border-top-left-radius:18px; border-top-right-radius:18px;
+    position:sticky; bottom:0;
+  }
+  .icon {
+    width:64px; height:64px; background:linear-gradient(180deg,#fff, #fff); color:#042;
+    border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:28px;
+    box-shadow:0 8px 20px rgba(2,8,23,0.55), inset 0 -6px 12px rgba(0,0,0,0.08);
+    transform-origin:center; transition:transform .18s ease, box-shadow .18s ease;
+    position:relative;
+  }
+  .icon.small{width:56px;height:56px;font-size:24px}
+  .icon.badge::after{
+    content: attr(data-badge); position:absolute; top:-6px; right:-6px;
+    background:#ff4d4d; color:white; width:22px; height:22px; border-radius:999px; display:flex; align-items:center; justify-content:center;
+    font-size:12px; box-shadow:0 4px 8px rgba(0,0,0,0.4);
+  }
+  .icon:active{transform:scale(.95) rotate(-4deg)}
+  .icon.pulse{animation:pop 1.6s infinite}
+  @keyframes pop{0%{transform:translateY(0)}50%{transform:translateY(-6px)}100%{transform:translateY(0)}}
+
+  /* Panels (screens) */
+  .panel{display:none}
+  .panel.active{display:block}
+
+  /* Title and controls inside panel */
+  .panel h2{margin:6px 0 10px; font-size:20px; color:var(--accent)}
+  .question{font-size:28px; color:#fff; font-weight:700; text-align:center; margin:6px 0}
+  input[type="text"], input[type="number"]{
+    width:100%; padding:12px 10px; border-radius:10px; border:none; background:rgba(255,255,255,0.04);
+    color:#fff; margin-top:8px; font-size:16px;
+  }
+  .btn{display:inline-block; margin:10px 6px 6px 0; background:var(--btn); color:#042; padding:10px 14px; border-radius:12px; border:none; cursor:pointer; font-weight:700}
+  .btn.ghost{background:transparent; color:#fff; border:1px solid rgba(255,255,255,0.08)}
+
+  /* ranking list */
+  .ranking-list{max-height:240px; overflow:auto; padding:6px; margin-top:8px}
+  .rank-item{display:flex; justify-content:space-between; padding:8px 10px; border-radius:10px; background:rgba(255,255,255,0.02); margin-bottom:8px}
+
+  /* responsive */
+  @media (max-width:420px){
+    .icon{width:56px;height:56px;font-size:22px}
+    .question{font-size:22px}
+  }
+</style>
 </head>
 <body>
-  <div class="loading-screen">
-    <div>Cargando MindMath...</div>
-    <div class="loading-bar"><div class="loading-fill"></div></div>
-  </div>  <div class="menu">
-    <h1>MindMath 🎮</h1>
-    <div class="menu-grid">
-      <div class="icon-btn" onclick="openGame('memoria')">🧠 Memoria</div>
-      <div class="icon-btn" onclick="openGame('calculo')">⚡ Cálculo Rápido</div>
-      <div class="icon-btn" onclick="openGame('sudoku')">🔢 Sudoku Infantil</div>
-      <div class="icon-btn" onclick="openGame('suma')">➕ Suma Simple</div>
-      <div class="icon-btn" onclick="openGame('explicacion')">📘 Explicación</div>
+  <div class="screen" role="application" aria-label="MindMath juegos para niños">
+
+    <!-- Loading -->
+    <div id="loading">
+      <div class="loader" aria-hidden="true"></div>
+      <div style="color:#fff;font-size:18px">Cargando MindMath...</div>
     </div>
-  </div>  <!-- Pantallas de minijuegos -->  <div id="memoria" class="game-screen">
-    <h2>Juego de Memoria</h2>
-    <p>Recuerda este número: <strong id="mem-num"></strong></p>
-    <input type="text" id="mem-input" placeholder="Escríbelo aquí" />
-    <button onclick="checkMemoria()">Comprobar</button>
-    <p id="mem-result"></p>
-    <button class="back-btn" onclick="goBack()">Volver</button>
-  </div>  <div id="calculo" class="game-screen">
-    <h2>Cálculo Rápido</h2>
-    <p id="calc-question"></p>
-    <input type="number" id="calc-input" />
-    <button onclick="checkCalculo()">Responder</button>
-    <p id="calc-result"></p>
-    <button class="back-btn" onclick="goBack()">Volver</button>
-  </div>  <div id="sudoku" class="game-screen">
-    <h2>Sudoku Infantil</h2>
-    <p>Rellena la cuadrícula 4x4 con números del 1 al 4.</p>
-    <table border="1" style="margin:auto;">
-      <tbody id="sudoku-grid"></tbody>
-    </table>
-    <button class="back-btn" onclick="goBack()">Volver</button>
-  </div>  <div id="suma" class="game-screen">
-    <h2>Suma Simple</h2>
-    <p id="suma-question"></p>
-    <input type="number" id="suma-input" />
-    <button onclick="checkSuma()">Responder</button>
-    <p id="suma-result"></p>
-    <button class="back-btn" onclick="goBack()">Volver</button>
-  </div>  <div id="explicacion" class="game-screen">
-    <h2>Explicación de los Juegos</h2>
-    <ul style="text-align:left; max-width:400px; margin:auto;">
-      <li><b>Memoria:</b> recuerda un número y escríbelo después.</li>
-      <li><b>Cálculo rápido:</b> resuelve multiplicaciones contra el reloj.</li>
-      <li><b>Sudoku Infantil:</b> llena una cuadrícula con números simples.</li>
-      <li><b>Suma simple:</b> suma números pequeños.</li>
-    </ul>
-    <button class="back-btn" onclick="goBack()">Volver</button>
-  </div>  <script>
-    // Pantalla de carga
-    setTimeout(()=>{
-      document.querySelector('.loading-screen').style.display = 'none';
-      document.querySelector('.menu').style.display = 'block';
-    }, 3100);
 
-    function openGame(id){
-      document.querySelector('.menu').style.display = 'none';
-      document.getElementById(id).style.display = 'block';
-      if(id==='memoria'){ startMemoria(); }
-      if(id==='calculo'){ startCalculo(); }
-      if(id==='suma'){ startSuma(); }
-      if(id==='sudoku'){ buildSudoku(); }
-    }
-    function goBack(){
-      document.querySelectorAll('.game-screen').forEach(s=>s.style.display='none');
-      document.querySelector('.menu').style.display = 'block';
-    }
+    <!-- HUD -->
+    <div class="hud" style="z-index:10;">
+      <div class="coinbox">🏅 <span id="topScoreDisplay">Top: 0</span></div>
+      <div style="display:flex; gap:8px;">
+        <div class="coinbox">👤 <span id="playerNameDisplay">Jugador</span></div>
+        <div class="coinbox">⭐ <span id="coinsDisplay">0</span></div>
+      </div>
+    </div>
 
-    // Memoria
-    let memNum;
-    function startMemoria(){
-      memNum = Math.floor(Math.random()*900+100);
-      document.getElementById('mem-num').innerText = memNum;
-      setTimeout(()=>{ document.getElementById('mem-num').innerText='???'; },2000);
-    }
-    function checkMemoria(){
-      let val = document.getElementById('mem-input').value;
-      document.getElementById('mem-result').innerText = val==memNum ? '✅ Correcto' : '❌ Intenta otra vez';
-    }
+    <!-- Stage (panels) -->
+    <div class="stage">
+      <div class="card">
+        <!-- Menu panel -->
+        <div id="panel-menu" class="panel active">
+          <h2>MindMath — ¡Juega y aprende!</h2>
+          <p style="color: #e6eef8;">Pulsa un ícono en la parte inferior para jugar. Ideal para niños — interfaz fácil, botones grandes.</p>
+          <div style="display:flex; gap:8px; align-items:center; margin-top:10px;">
+            <input id="playerName" type="text" placeholder="Nombre del jugador (opcional)">
+            <button id="saveNameBtn" class="btn">Guardar</button>
+          </div>
+          <div style="margin-top:12px;">
+            <button id="startMainGame" class="btn">Iniciar juego principal</button>
+            <button id="openRankingBtn" class="btn ghost" style="float:right">Ranking</button>
+          </div>
+        </div>
 
-    // Calculo rapido
-    let calcAns;
-    function startCalculo(){
-      let a = Math.floor(Math.random()*10);
-      let b = Math.floor(Math.random()*10);
-      calcAns = a*b;
-      document.getElementById('calc-question').innerText = `${a} × ${b} = ?`;
-    }
-    function checkCalculo(){
-      let val = document.getElementById('calc-input').value;
-      document.getElementById('calc-result').innerText = val==calcAns ? '✅ Bien hecho!' : '❌ Incorrecto';
-    }
+        <!-- Main quick-play game panel -->
+        <div id="panel-game" class="panel">
+          <h2>Juego principal</h2>
+          <div class="question" id="mainQuestion">0 × 0 = ?</div>
+          <input id="mainAnswer" type="text" inputmode="numeric" placeholder="Escribe la respuesta">
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button class="btn" id="checkMain">Comprobar</button>
+            <button class="btn ghost" id="endMain">Terminar</button>
+          </div>
+          <div id="mainFeedback" style="margin-top:8px; min-height:22px"></div>
+        </div>
 
-    // Suma simple
-    let sumaAns;
-    function startSuma(){
-      let a = Math.floor(Math.random()*10);
-      let b = Math.floor(Math.random()*10);
-      sumaAns = a+b;
-      document.getElementById('suma-question').innerText = `${a} + ${b} = ?`;
-    }
-    function checkSuma(){
-      let val = document.getElementById('suma-input').value;
-      document.getElementById('suma-result').innerText = val==sumaAns ? '✅ Correcto!' : '❌ Incorrecto';
-    }
+        <!-- Memory panel -->
+        <div id="panel-memory" class="panel">
+          <h2>🧠 Memoria</h2>
+          <p id="memPrompt" style="font-size:20px; text-align:center; margin:8px 0">Recuerda este número</p>
+          <input id="memInput" type="text" placeholder="Escribe el número">
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button class="btn" id="memCheck">Comprobar</button>
+            <button class="btn ghost" id="memNew">Nuevo</button>
+          </div>
+          <div id="memFeedback" style="margin-top:8px; min-height:22px"></div>
+        </div>
 
-    // Sudoku 4x4 básico
-    function buildSudoku(){
-      let grid = document.getElementById('sudoku-grid');
-      grid.innerHTML = '';
-      for(let i=0;i<4;i++){
-        let row = document.createElement('tr');
-        for(let j=0;j<4;j++){
-          let cell = document.createElement('td');
-          let input = document.createElement('input');
-          input.type='number';
-          input.min=1; input.max=4;
-          input.style.width='40px';
-          cell.appendChild(input);
-          row.appendChild(cell);
-        }
-        grid.appendChild(row);
+        <!-- Speed panel -->
+        <div id="panel-speed" class="panel">
+          <h2>⚡ Cálculo rápido</h2>
+          <div class="question" id="speedQ"></div>
+          <input id="speedInput" type="text" placeholder="Respuesta rápida">
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button class="btn" id="speedCheck">Comprobar</button>
+            <button class="btn ghost" id="speedNew">Nuevo</button>
+          </div>
+          <div id="speedFeedback" style="margin-top:8px; min-height:22px"></div>
+        </div>
+
+        <!-- Low-sum panel -->
+        <div id="panel-sum" class="panel">
+          <h2>➕ Suma simple</h2>
+          <div class="question" id="sumQ"></div>
+          <input id="sumInput" type="text" placeholder="Respuesta">
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button class="btn" id="sumCheck">Comprobar</button>
+            <button class="btn ghost" id="sumNew">Nuevo</button>
+          </div>
+          <div id="sumFeedback" style="margin-top:8px; min-height:22px"></div>
+        </div>
+
+        <!-- Sudoku panel -->
+        <div id="panel-sudoku" class="panel">
+          <h2>🔢 Sudoku (4x4)</h2>
+          <p style="margin:6px 0 10px">Llena cada fila y columna con 1-4 (sin repetir)</p>
+          <div id="sudokuWrap" style="display:flex;justify-content:center"></div>
+          <div style="display:flex; gap:8px; margin-top:8px; justify-content:center;">
+            <button class="btn" id="sudokuCheck">Comprobar</button>
+            <button class="btn ghost" id="sudokuNew">Nuevo</button>
+          </div>
+          <div id="sudokuFeedback" style="margin-top:8px; min-height:22px"></div>
+        </div>
+
+        <!-- Ranking panel -->
+        <div id="panel-ranking" class="panel">
+          <h2>🏆 Ranking</h2>
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+            <input id="scoreName" type="text" placeholder="Nombre para ranking (si quieres)">
+            <button id="saveScoreBtn" class="btn">Guardar puntaje</button>
+            <button id="clearRank" class="btn ghost">Limpiar</button>
+          </div>
+          <div class="ranking-list" id="rankingList"></div>
+          <div style="margin-top:8px; font-size:13px; color:rgba(255,255,255,0.6)">El ranking local se guarda en tu dispositivo. También puedes enviar puntajes a un servidor desde 'Enviar online'.</div>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button id="sendOnline" class="btn ghost">Enviar online (ejemplo)</button>
+            <button class="btn ghost" onclick="showPanel('panel-menu')">Volver</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bottom icons (replicate Subway surfers menu look) -->
+    <div class="bottom-bar" role="navigation" aria-label="Menu inferior">
+      <div class="icon pulse" title="Memoria" id="btn-memory">🧠</div>
+      <div class="icon pulse" title="Cálculo rápido" id="btn-speed">⚡</div>
+      <div class="icon pulse" title="Sudoku" id="btn-sudoku">🔢</div>
+      <div class="icon pulse" title="Suma simple" id="btn-sum">➕</div>
+      <div class="icon" title="Ranking" id="btn-ranking" data-badge="★">🏆</div>
+    </div>
+
+  </div>
+
+<script>
+/* -------------------------
+   Utilities & state
+   ------------------------- */
+const state = {
+  playerName: localStorage.getItem('mind_player') || 'Jugador',
+  topScore: Number(localStorage.getItem('mind_top') || 0),
+  currentScore: 0
+};
+
+/* Simple helper to show panels */
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById(id);
+  if(el) el.classList.add('active');
+  // update displays
+  document.getElementById('playerNameDisplay').textContent = state.playerName;
+  document.getElementById('topScoreDisplay').textContent = state.topScore;
+}
+
+/* Hide loading after a short delay */
+window.addEventListener('load', ()=>{
+  setTimeout(()=> {
+    document.getElementById('loading').style.display='none';
+    showPanel('panel-menu');
+  }, 900);
+});
+
+/* Save / display player name */
+document.getElementById('saveNameBtn').addEventListener('click', ()=>{
+  const name = document.getElementById('playerName').value.trim();
+  if(name) state.playerName = name;
+  localStorage.setItem('mind_player', state.playerName);
+  document.getElementById('playerNameDisplay').textContent = state.playerName;
+  alert('Nombre guardado: ' + state.playerName);
+});
+
+/* -------------------------
+   Main quick-play logic
+   ------------------------- */
+function rand(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+let mainCorrect = 0;
+function newMainQuestion(){
+  const op = Math.random() < 0.5 ? '+' : '×';
+  let a = rand(1,12), b = rand(1,12);
+  if(op === '+'){ mainCorrect = a + b; document.getElementById('mainQuestion').textContent = `${a} + ${b} = ?`; }
+  else { mainCorrect = a * b; document.getElementById('mainQuestion').textContent = `${a} × ${b} = ?`; }
+  document.getElementById('mainAnswer').value = '';
+  document.getElementById('mainFeedback').textContent = '';
+}
+document.getElementById('startMainGame').addEventListener('click', ()=>{ showPanel('panel-game'); newMainQuestion(); });
+document.getElementById('checkMain').addEventListener('click', ()=>{
+  const v = document.getElementById('mainAnswer').value.trim();
+  if(!v){ document.getElementById('mainFeedback').textContent = 'Ingresa un número'; return; }
+  if(Number(v) === mainCorrect){
+    document.getElementById('mainFeedback').textContent = '✅ ¡Correcto!';
+    state.currentScore += 10;
+    if(state.currentScore > state.topScore) { state.topScore = state.currentScore; localStorage.setItem('mind_top', state.topScore); }
+    document.getElementById('topScoreDisplay').textContent = state.topScore;
+    setTimeout(newMainQuestion, 600);
+  } else {
+    document.getElementById('mainFeedback').textContent = '❌ Intenta otra vez';
+  }
+});
+document.getElementById('endMain').addEventListener('click', ()=>{
+  // store final score in local session ranking
+  storeLocalScore(state.currentScore);
+  state.currentScore = 0;
+  alert('Partida finalizada. Puntaje guardado localmente.');
+  showPanel('panel-menu');
+});
+
+/* -------------------------
+   Memoria (simple)
+   ------------------------- */
+let memValue = null;
+function newMemory(){
+  memValue = rand(100,999);
+  const prompt = document.getElementById('memPrompt');
+  prompt.textContent = 'Recuerda: ' + memValue;
+  document.getElementById('memFeedback').textContent = '';
+  setTimeout(()=> { prompt.textContent = 'Escribe el número que viste'; }, 1600);
+  document.getElementById('memInput').value = '';
+}
+document.getElementById('memNew').addEventListener('click', newMemory);
+document.getElementById('memCheck').addEventListener('click', ()=>{
+  const val = document.getElementById('memInput').value.trim();
+  const fb = document.getElementById('memFeedback');
+  if(val === String(memValue)){ fb.textContent = '✅ Correcto!'; state.currentScore += 5; }
+  else fb.textContent = '❌ Fallaste. Intenta otra vez';
+  if(state.currentScore > state.topScore){ state.topScore = state.currentScore; localStorage.setItem('mind_top', state.topScore); }
+});
+document.getElementById('btn-memory').addEventListener('click', ()=>{ showPanel('panel-memory'); newMemory(); });
+
+/* -------------------------
+   Speed (multiplication quick)
+   ------------------------- */
+let speedAns = 0;
+function newSpeed(){
+  const a = rand(2,9), b = rand(2,9);
+  speedAns = a*b;
+  document.getElementById('speedQ').textContent = `${a} × ${b} = ?`;
+  document.getElementById('speedInput').value = '';
+  document.getElementById('speedFeedback').textContent = '';
+}
+document.getElementById('speedNew').addEventListener('click', newSpeed);
+document.getElementById('speedCheck').addEventListener('click', ()=>{
+  const v = document.getElementById('speedInput').value.trim();
+  const fb = document.getElementById('speedFeedback');
+  if(Number(v) === speedAns){ fb.textContent = '✅ Bien!'; state.currentScore += 7; newSpeed(); }
+  else fb.textContent = '❌ Incorrecto';
+  if(state.currentScore > state.topScore){ state.topScore = state.currentScore; localStorage.setItem('mind_top', state.topScore); }
+});
+document.getElementById('btn-speed').addEventListener('click', ()=>{ showPanel('panel-speed'); newSpeed(); });
+
+/* -------------------------
+   Sum (low numbers)
+   ------------------------- */
+let sumAns = 0;
+function newSum(){
+  const a = rand(1,6), b = rand(1,6);
+  sumAns = a+b;
+  document.getElementById('sumQ').textContent = `${a} + ${b} = ?`;
+  document.getElementById('sumInput').value = '';
+  document.getElementById('sumFeedback').textContent = '';
+}
+document.getElementById('sumNew').addEventListener('click', newSum);
+document.getElementById('sumCheck').addEventListener('click', ()=>{
+  const v = document.getElementById('sumInput').value.trim();
+  const fb = document.getElementById('sumFeedback');
+  if(Number(v) === sumAns){ fb.textContent = '✅ Muy bien!'; state.currentScore += 3; newSum(); }
+  else fb.textContent = '❌ Prueba otra vez';
+  if(state.currentScore > state.topScore){ state.topScore = state.currentScore; localStorage.setItem('mind_top', state.topScore); }
+});
+document.getElementById('btn-sum').addEventListener('click', ()=>{ showPanel('panel-sum'); newSum(); });
+
+/* -------------------------
+   Sudoku 4x4 simple generator
+   ------------------------- */
+let sudokuSolution = [];
+function buildSudoku(){
+  // Simple pre-built 4x4 valid base (we can rotate)
+  const base = [
+    [1,2,3,4],
+    [3,4,1,2],
+    [2,1,4,3],
+    [4,3,2,1]
+  ];
+  // shuffle rows/cols to make variants
+  function shuffleArray(a){ return a.sort(()=>Math.random()-.5); }
+  let grid = base.map(r => r.slice());
+  // do some random row/col swaps to vary puzzle
+  for(let k=0;k<6;k++){
+    let i=rand(0,3), j=rand(0,3);
+    [grid[i], grid[j]] = [grid[j], grid[i]];
+  }
+  // Remove some cells (set empty)
+  sudokuSolution = JSON.parse(JSON.stringify(grid));
+  const wrap = document.getElementById('sudokuWrap');
+  wrap.innerHTML = '';
+  const table = document.createElement('table');
+  table.style.borderCollapse='collapse';
+  table.style.background='rgba(255,255,255,0.02)';
+  for(let r=0;r<4;r++){
+    const tr = document.createElement('tr');
+    for(let c=0;c<4;c++){
+      const td = document.createElement('td');
+      td.style.border='1px solid rgba(255,255,255,0.06)';
+      td.style.padding='6px';
+      const inp = document.createElement('input');
+      inp.type='number'; inp.min=1; inp.max=4; inp.style.width='44px'; inp.style.textAlign='center';
+      // remove some cells randomly
+      if(Math.random()<0.5){
+        inp.value = '';
+      } else {
+        inp.value = grid[r][c];
+        inp.disabled = true;
+        inp.style.background = 'rgba(255,255,255,0.02)';
       }
+      td.appendChild(inp); tr.appendChild(td);
     }
-  </script></body>
+    table.appendChild(tr);
+  }
+  wrap.appendChild(table);
+  document.getElementById('sudokuFeedback').textContent = '';
+}
+document.getElementById('sudokuNew').addEventListener('click', buildSudoku);
+document.getElementById('sudokuCheck').addEventListener('click', ()=>{
+  const inputs = Array.from(document.querySelectorAll('#sudokuWrap input'));
+  const values = [];
+  for(let i=0;i<4;i++){
+    const row = [];
+    for(let j=0;j<4;j++){
+      const v = inputs[i*4 + j].value.trim();
+      if(v === '') { document.getElementById('sudokuFeedback').textContent = '❌ Completa todas las casillas'; return; }
+      row.push(Number(v));
+    }
+    values.push(row);
+  }
+  // verify 1-4 unique per row and column
+  function unique1to4(arr){
+    const s = new Set(arr);
+    return s.size===4 && arr.every(x => x>=1 && x<=4);
+  }
+  for(let r=0;r<4;r++) if(!unique1to4(values[r])) { document.getElementById('sudokuFeedback').textContent='❌ Error en fila '+(r+1); return; }
+  for(let c=0;c<4;c++){
+    const col = [values[0][c],values[1][c],values[2][c],values[3][c]];
+    if(!unique1to4(col)){ document.getElementById('sudokuFeedback').textContent='❌ Error en columna '+(c+1); return; }
+  }
+  document.getElementById('sudokuFeedback').textContent='✅ ¡Buen trabajo!';
+  state.currentScore += 12;
+  if(state.currentScore > state.topScore){ state.topScore = state.currentScore; localStorage.setItem('mind_top', state.topScore); }
+});
+
+/* -------------------------
+   Ranking: localStorage & "online" stub
+   ------------------------- */
+function loadRanking(){
+  const raw = localStorage.getItem('mind_ranking');
+  return raw ? JSON.parse(raw) : [];
+}
+function saveRanking(list){
+  localStorage.setItem('mind_ranking', JSON.stringify(list));
+  renderRanking();
+}
+function storeLocalScore(score){
+  const name = (document.getElementById('scoreName')?.value || state.playerName || 'Jugador').trim() || 'Jugador';
+  const ranking = loadRanking();
+  ranking.push({name,score:score, when: Date.now()});
+  // keep top 20 sorted
+  ranking.sort((a,b)=>b.score-a.score);
+  saveRanking(ranking.slice(0,20));
+}
+function renderRanking(){
+  const list = loadRanking();
+  const container = document.getElementById('rankingList');
+  container.innerHTML = '';
+  if(list.length===0){ container.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.6)">Aún no hay puntajes guardados</div>'; return;}
+  list.forEach((r,i)=>{
+    const div = document.createElement('div'); div.className='rank-item';
+    div.innerHTML = `<div style="font-weight:700">${i+1}. ${escapeHtml(r.name)}</div><div>${r.score} pts</div>`;
+    container.appendChild(div);
+  });
+}
+document.getElementById('openRankingBtn').addEventListener('click', ()=>{ renderRanking(); showPanel('panel-ranking'); });
+document.getElementById('btn-ranking').addEventListener('click', ()=>{ renderRanking(); showPanel('panel-ranking'); });
+document.getElementById('saveScoreBtn').addEventListener('click', ()=>{ storeLocalScore(state.currentScore); alert('Puntaje guardado en ranking local.'); renderRanking(); });
+document.getElementById('clearRank').addEventListener('click', ()=>{ if(confirm('Borrar ranking local?')){ saveRanking([]); } });
+
+/* Online send stub — prepared to integrate real API */
+async function sendScoreOnline(name, score){
+  // IMPORTANT: Replace the URL with your server endpoint.
+  // This is a placeholder to show where to send data.
+  try {
+    const payload = { name, score, timestamp: Date.now() };
+    // Uncomment & configure the fetch when you have an API:
+    // const res = await fetch('https://your-api.example.com/scores', {
+    //   method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
+    // });
+    // const data = await res.json();
+    // return data;
+    console.log('Enviar online (simulado):', payload);
+    alert('Envío online simulado (no envía realmente). Implementa tu API y descomenta fetch en el código.');
+    return {ok:true};
+  } catch(err){
+    console.error(err);
+    return {ok:false, error: err.message};
+  }
+}
+document.getElementById('sendOnline').addEventListener('click', async ()=>{
+  const name = (document.getElementById('scoreName').value || state.playerName).trim() || 'Jugador';
+  const score = state.currentScore || state.topScore || 0;
+  const res = await sendScoreOnline(name, score);
+  if(res.ok) alert('Envío simulado OK. Integra tu API para envío real.');
+  else alert('Error al enviar online: ' + (res.error||'desconocido'));
+});
+
+/* helper to escape html when rendering names */
+function escapeHtml(s){ return (s+'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]); }
+
+/* attach bottom icons to open panels */
+document.getElementById('btn-memory').addEventListener('click', ()=>{ showPanel('panel-memory'); newMemory(); });
+document.getElementById('btn-speed').addEventListener('click', ()=>{ showPanel('panel-speed'); newSpeed(); });
+document.getElementById('btn-sudoku').addEventListener('click', ()=>{ showPanel('panel-sudoku'); buildSudoku(); });
+document.getElementById('btn-sum').addEventListener('click', ()=>{ showPanel('panel-sum'); newSum(); });
+
+/* initial UI values */
+document.getElementById('playerNameDisplay').textContent = state.playerName;
+document.getElementById('topScoreDisplay').textContent = state.topScore;
+document.getElementById('coinsDisplay').textContent = 0;
+
+/* small UX nicety: save name on Enter in playerName */
+document.getElementById('playerName').addEventListener('keydown', (e)=>{ if(e.key==='Enter') document.getElementById('saveNameBtn').click(); });
+
+/* show menu on load */
+showPanel('panel-menu');
+
+</script>
+</body>
 </html>

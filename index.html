@@ -22,7 +22,7 @@
   label{font-size:14px; color:var(--muted);}
   .center{display:flex; justify-content:center; align-items:center;}
   .hidden{display:none;}
-  .question{font-size:36px; text-align:center; margin:6px 0; color:var(--text); display:flex; gap:12px; align-items:center; justify-content:center;}
+  .question{font-size:32px; text-align:center; margin:10px 0;}
   .timebar{height:12px; width:100%; background:rgba(255,255,255,0.06); border-radius:8px; overflow:hidden;}
   .timefill{height:100%; width:100%; background:linear-gradient(90deg,var(--accent), var(--accent-2)); transition:width 0.08s linear;}
   .kbd{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:6px;}
@@ -34,60 +34,130 @@
   .feedback .msg{color:#ffd380;}
   .feedback .explain{color:var(--muted); font-size:14px; margin-top:4px;}
   .gameover{font-size:22px; text-align:center; color:#ffd380;}
-
-  /* HUD graphics */
-  .hud{display:flex; gap:12px; align-items:center; justify-content:center; margin-bottom:10px;}
-  .circle{--size:70px;width:var(--size);height:var(--size);border-radius:50%;display:grid;place-items:center;position:relative;}
-  .circle svg{width:78px;height:78px;transform:rotate(-90deg);}
-  .circle .num{position:absolute;font-weight:700;font-size:16px;color:var(--text);}
-  .op-badge{width:76px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);box-shadow:0 6px 18px rgba(0,0,0,0.45);}
-  .op-badge .op{animation:op-wiggle 2s linear infinite;}
-  @keyframes op-wiggle{0%{transform:translateY(0);}50%{transform:translateY(-4px) rotate(-6deg);}100%{transform:translateY(0);}}
-  .spark{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity 0.18s ease;}
-  .spark.show{opacity:1;}
-  .spark.correct{background:radial-gradient(circle at 50% 30%, rgba(110,231,183,0.12), transparent 30%);}
-  .spark.bad{background:radial-gradient(circle at 50% 30%, rgba(255,180,162,0.12), transparent 30%);}
 </style>
 </head>
 <body>
 <div class="app">
-  <!-- Pantallas omitidas por brevedad, igual que antes -->
-  <!-- ... menú, instrucciones, juego y gameover ... -->
 
-  <!-- GAME -->
+  <!-- MENÚ -->
+  <div class="card" id="menuScreen">
+    <h1>MindMath</h1>
+    <div class="col">
+      <label>Dificultad</label>
+      <select id="difficulty">
+        <option>Fácil</option>
+        <option>Medio</option>
+        <option>Difícil</option>
+      </select>
+      <div class="center" style="margin-top:12px;">
+        <button id="playBtn" class="big">Jugar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JUEGO -->
   <div class="card hidden" id="gameScreen">
     <div class="status">
       <div id="scoreLabel">Puntaje: 0</div>
       <div id="livesLabel">Vidas: 3</div>
     </div>
-    <div class="hud">
-      <div class="circle">
-        <svg viewBox="0 0 36 36">
-          <path d="M18 2.0845 a15.9 15.9 0 0 1 0 31.8 a15.9 15.9 0 0 1 0 -31.8" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2"/>
-          <path id="scoreArc" d="M18 2.0845 a15.9 15.9 0 0 1 0 31.8" fill="none" stroke="url(#grad)" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="0 100"/>
-          <defs><linearGradient id="grad"><stop offset="0%" stop-color="var(--accent)"/><stop offset="100%" stop-color="var(--accent-2)"/></linearGradient></defs>
-        </svg>
-        <div class="num" id="hudScore">0</div>
-      </div>
-      <div class="op-badge"><span class="op" id="opIcon">×</span><div class="spark" id="sparkArea"></div></div>
-    </div>
     <div class="question" id="questionLabel">0 × 0 = ?</div>
     <div class="timebar"><div id="timeFill" class="timefill"></div></div>
-    <input id="answerInput" type="text" inputmode="decimal" placeholder="Respuesta">
-    <div class="feedback"><div class="msg" id="feedback"></div><div class="explain" id="explain"></div></div>
-    <!-- keypad y botones igual que antes -->
+    <input id="answerInput" type="text" placeholder="Respuesta">
+    <div class="feedback">
+      <div class="msg" id="feedback"></div>
+      <div class="explain" id="explain"></div>
+    </div>
+    <div class="kbd" id="keypad">
+      <button data-d="1">1</button><button data-d="2">2</button><button data-d="3">3</button>
+      <button data-d="4">4</button><button data-d="5">5</button><button data-d="6">6</button>
+      <button data-d="7">7</button><button data-d="8">8</button><button data-d="9">9</button>
+      <button id="dotBtn">.</button><button data-d="0">0</button><button id="okBtn">✓</button>
+    </div>
+    <div class="footer-row">
+      <button id="restartBtn" class="ghost">Reiniciar</button>
+      <button id="exitBtn" class="ghost">Salir</button>
+    </div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div class="card hidden" id="gameoverScreen">
+    <h1>Juego terminado</h1>
+    <div class="gameover" id="finalScore">Puntaje final: 0</div>
+    <div class="center" style="margin-top:10px;">
+      <button id="toMenuBtn" class="big">Volver al menú</button>
+    </div>
   </div>
 </div>
 
 <script>
-const state={difficulty:'medium',range_max:10,base_time:10,lives:3,score:0,time_remaining:0,max_time:10,num1:0,num2:0,correct:0,op:'*',tolerance:0.01};
-const el={questionLabel:document.getElementById('questionLabel'),answerInput:document.getElementById('answerInput'),feedback:document.getElementById('feedback'),explain:document.getElementById('explain'),opIcon:document.getElementById('opIcon'),hudScore:document.getElementById('hudScore'),scoreArc:document.getElementById('scoreArc'),sparkArea:document.getElementById('sparkArea')};
+const Screens={menu:document.getElementById('menuScreen'),game:document.getElementById('gameScreen'),gameover:document.getElementById('gameoverScreen')};
+const el={difficulty:document.getElementById('difficulty'),playBtn:document.getElementById('playBtn'),
+  scoreLabel:document.getElementById('scoreLabel'),livesLabel:document.getElementById('livesLabel'),
+  questionLabel:document.getElementById('questionLabel'),timeFill:document.getElementById('timeFill'),
+  answerInput:document.getElementById('answerInput'),feedback:document.getElementById('feedback'),explain:document.getElementById('explain'),
+  keypad:document.getElementById('keypad'),okBtn:document.getElementById('okBtn'),
+  restartBtn:document.getElementById('restartBtn'),exitBtn:document.getElementById('exitBtn'),
+  finalScore:document.getElementById('finalScore'),toMenuBtn:document.getElementById('toMenuBtn')};
 
+const state={difficulty:'medium',range_max:10,base_time:10,lives:3,score:0,time_remaining:0,max_time:10,num1:0,num2:0,correct:0,op:'*'};
+
+function show(s){for(const k in Screens)Screens[k].classList.add('hidden');s.classList.remove('hidden');}
+
+function applyDifficulty(name){
+  if(name==='Fácil'){state.range_max=8;state.base_time=12;state.lives=5;state.difficulty='easy';}
+  else if(name==='Difícil'){state.range_max=20;state.base_time=7;state.lives=2;state.difficulty='hard';}
+  else{state.range_max=12;state.base_time=10;state.lives=3;state.difficulty='medium';}
+}
+
+function pickOperator(){
+  if(state.difficulty==='easy'){return Math.random()<0.5?'+':'-';}
+  if(state.difficulty==='hard'){const arr=['+','-','*','/','√'];return arr[Math.floor(Math.random()*arr.length)];}
+  return Math.random()<0.5?'*':'/';
+}
+
+function newRound(){
+  state.op=pickOperator();
+  if(state.op==='+'){state.num1=rand(1,state.range_max);state.num2=rand(1,state.range_max);state.correct=state.num1+state.num2;el.questionLabel.textContent=`${state.num1} + ${state.num2} = ?`;}
+  if(state.op==='-'){let a=rand(1,state.range_max),b=rand(1,state.range_max);if(b>a)[a,b]=[b,a];state.num1=a;state.num2=b;state.correct=a-b;el.questionLabel.textContent=`${a} - ${b} = ?`;}
+  if(state.op==='*'){state.num1=rand(1,state.range_max);state.num2=rand(1,state.range_max);state.correct=state.num1*state.num2;el.questionLabel.textContent=`${state.num1} × ${state.num2} = ?`;}
+  if(state.op==='/'){state.num2=rand(1,state.range_max);state.num1=state.num2*rand(1,state.range_max);state.correct=state.num1/state.num2;el.questionLabel.textContent=`${state.num1} ÷ ${state.num2} = ?`;}
+  if(state.op==='√'){const r=rand(2,10);state.num1=r*r;state.correct=r;el.questionLabel.textContent=`√${state.num1} = ?`;}
+  state.time_remaining=state.base_time;
+  el.answerInput.value="";el.feedback.textContent="";el.explain.textContent="";
+}
+
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function parseUserAnswer(txt){const c=txt.replace(',','.').trim();const v=parseFloat(c);return isNaN(v)?null:v;}
 function approxEqual(a,b,t){return Math.abs(a-b)<=t;}
-function parseUserAnswer(txt){const c=txt.replace(',', '.').trim();const v=parseFloat(c);return isNaN(v)?null:v;}
 function formatAnswer(ans){return Number.isInteger(ans)?ans.toString():(Math.round(ans*100)/100).toFixed(2);}
-function explainStep(){let text="";if(state.op==='+')text=`${state.num1} + ${state.num2} = ${state.correct}`;else if(state.op==='-')text=`${state.num1} - ${state.num2} = ${state.correct}`;else if(state.op==='*')text=`${state.num1} × ${state.num2} = ${state.correct}`;else if(state.op==='/')text=`${state.num1} ÷ ${state.num2} = ${formatAnswer(state.correct)}`;else if(state.op==='√')text=`√${state.num1} = ${state.correct}`;return text;}
-function submitAnswer(){const txt=el.answerInput.value.trim();el.explain.textContent="";if(!txt){el.feedback.textContent='Ingresa un número';return;}if(state.difficulty==='easy'&&(txt.includes('.')||txt.includes(','))){el.feedback.textContent='Número inválido (solo enteros en Fácil)';return;}const val=parseUserAnswer(txt);if(val===null){el.feedback.textContent='Número inválido';return;}let correct=false;if(state.op==='/'||state.op==='√'){correct=approxEqual(val,state.correct,0.02);}else{correct=approxEqual(val,state.correct,0.0001);}if(correct){el.feedback.textContent='¡Correcto!';}else{el.feedback.textContent=`Incorrecto. Era ${formatAnswer(state.correct)}`;el.explain.textContent=explainStep();}}
+function explainStep(){if(state.op==='+')return `${state.num1} + ${state.num2} = ${state.correct}`;if(state.op==='-')return `${state.num1} - ${state.num2} = ${state.correct}`;if(state.op==='*')return `${state.num1} × ${state.num2} = ${state.correct}`;if(state.op==='/')return `${state.num1} ÷ ${state.num2} = ${formatAnswer(state.correct)}`;if(state.op==='√')return `√${state.num1} = ${state.correct}`;}
+
+function submitAnswer(){
+  const txt=el.answerInput.value.trim();
+  el.explain.textContent="";
+  if(!txt){el.feedback.textContent="Ingresa un número";return;}
+  if(state.difficulty==='easy'&&(txt.includes('.')||txt.includes(','))){el.feedback.textContent="Número inválido (solo enteros en Fácil)";return;}
+  const val=parseUserAnswer(txt);if(val===null){el.feedback.textContent="Número inválido";return;}
+  let correct=false;
+  if(state.op==='/'||state.op==='√'){correct=approxEqual(val,state.correct,0.02);}else{correct=approxEqual(val,state.correct,0.0001);}
+  if(correct){state.score++;el.feedback.textContent="¡Correcto!";}else{state.lives--;el.feedback.textContent=`Incorrecto. Era ${formatAnswer(state.correct)}`;el.explain.textContent=explainStep();}
+  if(state.lives<=0){endGame();}else{setTimeout(newRound,1000);}
+  el.scoreLabel.textContent=`Puntaje: ${state.score}`;el.livesLabel.textContent=`Vidas: ${state.lives}`;
+}
+
+function endGame(){el.finalScore.textContent=`Puntaje final: ${state.score}`;show(Screens.gameover);}
+function startGame(){applyDifficulty(el.difficulty.value);state.score=0;el.scoreLabel.textContent="Puntaje: 0";el.livesLabel.textContent=`Vidas: ${state.lives}`;newRound();show(Screens.game);}
+
+el.playBtn.onclick=startGame;
+el.okBtn.onclick=submitAnswer;
+el.keypad.onclick=(e)=>{const d=e.target.getAttribute('data-d');if(d){el.answerInput.value+=d;}if(e.target.id==='dotBtn'){el.answerInput.value+='.';}};
+el.answerInput.onkeydown=(e)=>{if(e.key==='Enter')submitAnswer();}
+el.restartBtn.onclick=startGame;
+el.exitBtn.onclick=()=>show(Screens.menu);
+el.toMenuBtn.onclick=()=>show(Screens.menu);
+
+show(Screens.menu);
 </script>
 </body>
 </html>

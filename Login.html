@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>MindMath - Login</title>
+<style>
+body {
+  font-family: Arial;
+  background:#1E3C72;
+  color:white;
+  text-align:center;
+  padding-top:50px;
+}
+input {
+  padding:10px;
+  width:80%;
+  margin: 8px;
+  font-size:18px;
+}
+button {
+  padding:10px;
+  width:85%;
+  font-size:18px;
+  background:#4CAF50;
+  color:white;
+  border:0;
+  margin-top:10px;
+}
+</style>
+<script src="auth.js"></script>
+</head>
+<body>
+
+<h2>🔐 Iniciar Sesión</h2>
+
+<input id="username" placeholder="Nombre de usuario">
+<input id="password" type="password" placeholder="Contraseña">
+
+<button onclick="login()">Ingresar</button>
+<p>¿No tienes cuenta?</p>
+<button onclick="register()">Crear cuenta</button>
+
+<script>
+if (localStorage.getItem("loggedUser")) {
+    window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>

@@ -1,117 +1,114 @@
-<!DOCTYPE html>
-<html lang="es">
+<!DOCTYPE html><html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MindMath</title>
-<style>
-body {
-  background: #1E3C72;
-  color: white;
-  font-family: Arial;
-  text-align: center;
-  padding: 20px;
-}
-button {
-    background: #4CAF50;
-    color: white;
-    padding: 15px;
-    width: 80%;
-    font-size: 20px;
-    margin: 10px auto;
-    border: none;
-    border-radius: 10px;
-    display: block;
-}
-input {
-    font-size: 22px;
-    padding: 10px;
-    width: 60%;
-    text-align: center;
-}
-h1 { font-size: 35px; }
-.hidden { display: none; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindMath</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    #container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 320px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover { background: #45a049; }#game, #dashboard { display: none; }
+
+  </style>
 </head>
 <body>
+<div id="container">  <!-- LOGIN -->  <div id="loginScreen">
+    <h2>Iniciar sesión</h2>
+    <input id="loginUser" placeholder="Usuario" />
+    <button onclick="login()">Entrar</button>
+  </div>  <!-- DASHBOARD -->  <div id="dashboard">
+    <h2 id="welcome"></h2>
+    <p>Puntaje: <span id="score">0</span></p>
+    <button onclick="startGame()">Jugar</button>
+    <button onclick="logout()">Cerrar sesión</button>
+  </div>  <!-- GAME -->  <div id="game">
+    <h3 id="question"></h3>
+    <input id="answer" placeholder="Tu respuesta" />
+    <button onclick="checkAnswer()">Enviar</button>
+  </div></div><script>
+  let user = localStorage.getItem("mindmath_user");
+  let score = localStorage.getItem("mindmath_score") || 0;
+  let a, b;
 
-<h1>🎮 MindMath</h1>
-
-<div id="menu">
-  <button onclick="selectLevel('facil',90,5)">🌱 Fácil (90s)</button>
-  <button onclick="selectLevel('intermedio',70,4)">🚀 Intermedio (70s)</button>
-  <button onclick="selectLevel('dificil',50,3)">🔥 Difícil (50s)</button>
-  <button onclick="selectLevel('extremo',30,2)">💀 Extremo (30s)</button>
-</div>
-
-<div id="game" class="hidden">
-  <h2 id="levelTxt"></h2>
-  <p id="points">🏆 Puntos: 0</p>
-  <p id="lives">❤️ Vidas: 3</p>
-  <p id="time">⏱️ 60s</p>
-
-  <h2 id="question"></h2>
-  <input id="answer" placeholder="Tu respuesta" />
-  <button onclick="check()">✅ Enviar</button>
-  <button style="background:#9E9E9E" onclick="restartMenu()">🏠 Menú</button>
-</div>
-
-<script>
-let puntos=0, vidas=3, tiempo=60, respuestaCorrecta, timer, nivel="facil";
-
-function selectLevel(niv,t,v){
-  nivel=niv; puntos=0; vidas=v; tiempo=t;
-  document.getElementById("menu").classList.add("hidden");
-  document.getElementById("game").classList.remove("hidden");
-  document.getElementById("levelTxt").innerText="Nivel: "+nivel;
-  startGame();
-}
-
-function startGame(){
-  generarPregunta();
-  timer=setInterval(()=>{
-    tiempo--;
-    document.getElementById("time").innerText="⏱️ "+tiempo+"s";
-    if(tiempo<=0) fin();
-  },1000);
-}
-
-function generarPregunta(){
-  let ops = (nivel=="dificil"||nivel=="extremo")?["+", "-", "×", "÷", "√"]:["+", "-", "×"];
-  let op = ops[Math.floor(Math.random()*ops.length)];
-  let n1=Math.floor(Math.random()*20)+1, n2=Math.floor(Math.random()*20)+1;
-  switch(op){
-    case "+": respuestaCorrecta=n1+n2; break;
-    case "-": respuestaCorrecta=n1-n2; break;
-    case "×": n1=Math.floor(Math.random()*10)+2; n2=Math.floor(Math.random()*10)+2; respuestaCorrecta=n1*n2; break;
-    case "÷": n2=Math.floor(Math.random()*9)+2; let coc=Math.floor(Math.random()*9)+2; n1=n2*coc; respuestaCorrecta=coc; break;
-    case "√": n1=Math.floor(Math.random()*11)+2; respuestaCorrecta=n1; n2=n1*n1; op="√"+n2; document.getElementById("question").innerText="√"+n2; return;
+  function render() {
+    if(user) {
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("dashboard").style.display = "block";
+      document.getElementById("welcome").innerText = "Hola, " + user;
+      document.getElementById("score").innerText = score;
+    }
   }
-  document.getElementById("question").innerText = n1+" "+op+" "+n2;
-}
 
-function check(){
-  let val=parseInt(document.getElementById("answer").value);
-  document.getElementById("answer").value="";
-  if(val==respuestaCorrecta){ puntos+=10; }
-  else { vidas--; if(vidas<=0) return fin(); }
-  document.getElementById("points").innerText="🏆 Puntos: "+puntos;
-  document.getElementById("lives").innerText="❤️ Vidas: "+vidas;
-  generarPregunta();
-}
+  function login() {
+    const input = document.getElementById("loginUser").value;
+    if(!input) return alert("Escribe un usuario");
+    user = input;
+    localStorage.setItem("mindmath_user", user);
+    render();
+  }
 
-function fin(){
-  clearInterval(timer);
-  alert("🎯 Fin del juego\nPuntos: "+puntos);
-  restartMenu();
-}
+  function logout() {
+    localStorage.removeItem("mindmath_user");
+    location.reload();
+  }
 
-function restartMenu(){
-  clearInterval(timer);
-  document.getElementById("menu").classList.remove("hidden");
-  document.getElementById("game").classList.add("hidden");
-}
-</script>
+  function startGame() {
+    document.getElementById("dashboard").style.display = "none";
+    document.getElementById("game").style.display = "block";
+    newQuestion();
+  }
 
-</body>
+  function newQuestion() {
+    a = Math.floor(Math.random()*10);
+    b = Math.floor(Math.random()*10);
+    document.getElementById("question").innerText = `${a} + ${b} = ?`;
+  }
+
+  function checkAnswer() {
+    const ans = document.getElementById("answer").value;
+    if(Number(ans) === a+b) {
+      score++;
+      localStorage.setItem("mindmath_score", score);
+      document.getElementById("score").innerText = score;
+      alert("Correcto!");
+    } else {
+      alert("Incorrecto");
+    }
+    document.getElementById("answer").value = "";
+    newQuestion();
+  }
+
+  render();
+</script></body>
 </html>

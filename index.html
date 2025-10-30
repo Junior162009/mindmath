@@ -1,996 +1,117 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindMath - Clash Royale Style</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --clash-red: #FF4B4B;
-            --clash-orange: #FF9600;
-            --clash-yellow: #FFC800;
-            --clash-blue: #1CB0F6;
-            --clash-purple: #CE82FF;
-            --clash-gold: #FFD700;
-            --clash-dark: #3C3C3C;
-            --clash-light: #F0F0F0;
-            --clash-bg: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-            --clash-card-bg: linear-gradient(135deg, #8E2DE2, #4A00E0);
-            --clash-header-bg: linear-gradient(135deg, #232526, #414345);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: var(--clash-bg);
-            color: white;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        .app-container {
-            max-width: 480px;
-            margin: 0 auto;
-            min-height: 100vh;
-            background: rgba(0, 0, 0, 0.7);
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Header estilo Clash Royale */
-        .header {
-            background: var(--clash-header-bg);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 3px solid var(--clash-gold);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-            position: relative;
-            z-index: 10;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--clash-red), var(--clash-orange), var(--clash-yellow), var(--clash-blue), var(--clash-purple));
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 800;
-            font-size: 1.5rem;
-            color: var(--clash-gold);
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--clash-gold);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--clash-dark);
-            font-size: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .player-info {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-        }
-
-        .player-name {
-            font-size: 1rem;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 5px;
-        }
-
-        .player-level {
-            background: var(--clash-blue);
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Barra de progreso estilo Clash Royale */
-        .progress-container {
-            padding: 15px 20px;
-            background: rgba(0, 0, 0, 0.5);
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-
-        .progress-label {
-            font-weight: 600;
-            color: var(--clash-yellow);
-        }
-
-        .progress-value {
-            font-weight: 700;
-        }
-
-        .progress-bar {
-            height: 12px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 6px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--clash-blue), var(--clash-purple));
-            border-radius: 6px;
-            transition: width 0.5s ease;
-            position: relative;
-        }
-
-        .progress-fill::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            animation: shine 2s infinite;
-        }
-
-        /* Contenido principal */
-        .main-content {
-            padding: 20px;
-            min-height: calc(100vh - 180px);
-            overflow-y: auto;
-        }
-
-        /* Pestañas estilo Clash Royale */
-        .tabs {
-            display: flex;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            padding: 5px;
-            margin-bottom: 20px;
-        }
-
-        .tab {
-            flex: 1;
-            text-align: center;
-            padding: 12px 0;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .tab.active {
-            background: var(--clash-card-bg);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Sección de mazos */
-        .decks-section {
-            display: block;
-        }
-
-        .decks-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .deck-card {
-            background: var(--clash-card-bg);
-            border-radius: 12px;
-            padding: 15px;
-            position: relative;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .deck-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--clash-gold);
-        }
-
-        .deck-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .deck-name {
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-
-        .deck-level {
-            background: var(--clash-yellow);
-            color: var(--clash-dark);
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 0.8rem;
-            font-weight: 700;
-        }
-
-        .deck-progress {
-            height: 6px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-            overflow: hidden;
-            margin: 8px 0;
-        }
-
-        .deck-progress-fill {
-            height: 100%;
-            background: var(--clash-blue);
-            border-radius: 3px;
-        }
-
-        .deck-stats {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        /* Sección de colección */
-        .collection-section {
-            display: none;
-        }
-
-        .collection-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .collection-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--clash-yellow);
-        }
-
-        .collection-stats {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .collection-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
-
-        .collection-card {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 15px 10px;
-            text-align: center;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .collection-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--clash-red), var(--clash-orange));
-        }
-
-        .collection-card:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: scale(1.05);
-        }
-
-        .card-icon {
-            font-size: 2rem;
-            margin-bottom: 8px;
-        }
-
-        .card-name {
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .card-level {
-            background: var(--clash-blue);
-            padding: 2px 6px;
-            border-radius: 8px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            display: inline-block;
-        }
-
-        .card-progress {
-            height: 4px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 2px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-
-        .card-progress-fill {
-            height: 100%;
-            background: var(--clash-yellow);
-            border-radius: 2px;
-        }
-
-        /* Sección de batalla */
-        .battle-section {
-            display: none;
-            text-align: center;
-        }
-
-        .battle-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: var(--clash-yellow);
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .battle-stats {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 30px;
-        }
-
-        .battle-stat {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--clash-yellow);
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .battle-button {
-            background: linear-gradient(135deg, var(--clash-red), var(--clash-orange));
-            border: none;
-            border-radius: 50px;
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: white;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            margin: 20px 0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .battle-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.5s;
-        }
-
-        .battle-button:hover::before {
-            left: 100%;
-        }
-
-        .battle-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-        }
-
-        .battle-timer {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-top: 10px;
-        }
-
-        /* Sección de ofertas */
-        .offers-section {
-            display: none;
-        }
-
-        .offer-card {
-            background: linear-gradient(135deg, #8E2DE2, #4A00E0);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .offer-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--clash-yellow), var(--clash-orange));
-        }
-
-        .offer-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .offer-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: white;
-        }
-
-        .offer-badge {
-            background: var(--clash-red);
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 700;
-        }
-
-        .offer-description {
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-        }
-
-        .offer-items {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .offer-item {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 10px;
-            text-align: center;
-        }
-
-        .item-icon {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
-        }
-
-        .item-value {
-            font-size: 0.9rem;
-            font-weight: 700;
-        }
-
-        .offer-price {
-            text-align: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--clash-yellow);
-            margin: 15px 0;
-        }
-
-        .offer-button {
-            background: var(--clash-yellow);
-            color: var(--clash-dark);
-            border: none;
-            border-radius: 50px;
-            padding: 12px 0;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s ease;
-        }
-
-        .offer-button:hover {
-            background: var(--clash-orange);
-            transform: translateY(-2px);
-        }
-
-        /* Footer */
-        .footer {
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-around;
-            border-top: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .footer-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            padding: 5px 10px;
-            border-radius: 8px;
-        }
-
-        .footer-item.active {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .footer-icon {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
-        }
-
-        .footer-label {
-            font-size: 0.8rem;
-        }
-
-        /* Animaciones */
-        @keyframes shine {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        /* Efectos de partículas */
-        .particles {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: var(--clash-yellow);
-            border-radius: 50%;
-            opacity: 0;
-        }
-
-        /* Responsive */
-        @media (max-width: 480px) {
-            .decks-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .collection-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindMath</title>
+<style>
+body {
+  background: #1E3C72;
+  color: white;
+  font-family: Arial;
+  text-align: center;
+  padding: 20px;
+}
+button {
+    background: #4CAF50;
+    color: white;
+    padding: 15px;
+    width: 80%;
+    font-size: 20px;
+    margin: 10px auto;
+    border: none;
+    border-radius: 10px;
+    display: block;
+}
+input {
+    font-size: 22px;
+    padding: 10px;
+    width: 60%;
+    text-align: center;
+}
+h1 { font-size: 35px; }
+.hidden { display: none; }
+</style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Partículas de fondo -->
-        <div class="particles" id="particles"></div>
-        
-        <!-- Header -->
-        <div class="header">
-            <div class="logo">
-                <div class="logo-icon">🧠</div>
-                <span>MindMath</span>
-            </div>
-            <div class="player-info">
-                <div class="player-name">JUNIOR</div>
-                <div class="player-level">Nivel 8</div>
-            </div>
-        </div>
-        
-        <!-- Barra de progreso -->
-        <div class="progress-container">
-            <div class="progress-header">
-                <div class="progress-label">Batalla</div>
-                <div class="progress-value">50/500</div>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: 10%"></div>
-            </div>
-            <div class="progress-header" style="margin-top: 10px;">
-                <div class="progress-label">Townline en</div>
-                <div class="progress-value">6d 18h</div>
-            </div>
-        </div>
-        
-        <!-- Contenido principal -->
-        <div class="main-content">
-            <!-- Pestañas -->
-            <div class="tabs">
-                <div class="tab active" data-tab="decks">Mazos</div>
-                <div class="tab" data-tab="collection">Colección</div>
-                <div class="tab" data-tab="battle">Batalla</div>
-                <div class="tab" data-tab="offers">Ofertas</div>
-            </div>
-            
-            <!-- Sección de Mazos -->
-            <div class="decks-section active-section">
-                <div class="decks-grid">
-                    <div class="deck-card">
-                        <div class="deck-header">
-                            <div class="deck-name">Mazo 1</div>
-                            <div class="deck-level">Nivel 5</div>
-                        </div>
-                        <div class="deck-progress">
-                            <div class="deck-progress-fill" style="width: 40%"></div>
-                        </div>
-                        <div class="deck-stats">
-                            <span>4/10</span>
-                            <span>17/20</span>
-                        </div>
-                    </div>
-                    
-                    <div class="deck-card">
-                        <div class="deck-header">
-                            <div class="deck-name">Mazo 2</div>
-                            <div class="deck-level">Nivel 6</div>
-                        </div>
-                        <div class="deck-progress">
-                            <div class="deck-progress-fill" style="width: 20%"></div>
-                        </div>
-                        <div class="deck-stats">
-                            <span>2/10</span>
-                            <span>5/20</span>
-                        </div>
-                    </div>
-                    
-                    <div class="deck-card">
-                        <div class="deck-header">
-                            <div class="deck-name">Mazo 3</div>
-                            <div class="deck-level">Nivel 5</div>
-                        </div>
-                        <div class="deck-progress">
-                            <div class="deck-progress-fill" style="width: 60%"></div>
-                        </div>
-                        <div class="deck-stats">
-                            <span>15/50</span>
-                            <span>10/100</span>
-                        </div>
-                    </div>
-                    
-                    <div class="deck-card">
-                        <div class="deck-header">
-                            <div class="deck-name">Mazo 4</div>
-                            <div class="deck-level">Nivel 6</div>
-                        </div>
-                        <div class="deck-progress">
-                            <div class="deck-progress-fill" style="width: 80%"></div>
-                        </div>
-                        <div class="deck-stats">
-                            <span>7/10</span>
-                            <span>25/30</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="deck-card">
-                    <div class="deck-header">
-                        <div class="deck-name">Mazo 5</div>
-                        <div class="deck-level">Nivel 5</div>
-                    </div>
-                    <div class="deck-progress">
-                        <div class="deck-progress-fill" style="width: 10%"></div>
-                    </div>
-                    <div class="deck-stats">
-                        <span>1/10</span>
-                        <span>3/20</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Sección de Colección -->
-            <div class="collection-section">
-                <div class="collection-header">
-                    <div class="collection-title">Colección</div>
-                    <div class="collection-stats">Encontradas: 20/121</div>
-                </div>
-                
-                <div class="collection-grid">
-                    <div class="collection-card">
-                        <div class="card-icon">➕</div>
-                        <div class="card-name">Sumas</div>
-                        <div class="card-level">Nivel 5</div>
-                        <div class="card-progress">
-                            <div class="card-progress-fill" style="width: 40%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="collection-card">
-                        <div class="card-icon">➖</div>
-                        <div class="card-name">Restas</div>
-                        <div class="card-level">Nivel 5</div>
-                        <div class="card-progress">
-                            <div class="card-progress-fill" style="width: 20%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="collection-card">
-                        <div class="card-icon">✖️</div>
-                        <div class="card-name">Multiplicación</div>
-                        <div class="card-level">Nivel 3</div>
-                        <div class="card-progress">
-                            <div class="card-progress-fill" style="width: 60%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="collection-card">
-                        <div class="card-icon">➗</div>
-                        <div class="card-name">División</div>
-                        <div class="card-level">Nivel 5</div>
-                        <div class="card-progress">
-                            <div class="card-progress-fill" style="width: 10%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="collection-card">
-                        <div class="card-icon">🔢</div>
-                        <div class="card-name">Números</div>
-                        <div class="card-level">Nivel 4</div>
-                        <div class="card-progress">
-                            <div class="card-progress-fill" style="width: 70%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="collection-card">
-                        <div class="card-icon">📐</div>
-                        <div class="card-name">Geometría</div>
-                        <div class="card-level">Nivel 2</div>
-                        <div class="card-progress">
-                            <div class="card-progress-fill" style="width: 30%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Sección de Batalla -->
-            <div class="battle-section">
-                <div class="battle-title">¡Batalla Matemática!</div>
-                
-                <div class="battle-stats">
-                    <div class="battle-stat">
-                        <div class="stat-value">875</div>
-                        <div class="stat-label">Puntos</div>
-                    </div>
-                    <div class="battle-stat">
-                        <div class="stat-value">8</div>
-                        <div class="stat-label">Victorias</div>
-                    </div>
-                    <div class="battle-stat">
-                        <div class="stat-value">57min</div>
-                        <div class="stat-label">Tiempo</div>
-                    </div>
-                </div>
-                
-                <button class="battle-button pulse">¡COMBATIR!</button>
-                
-                <div class="battle-timer">Próxima batalla disponible en: 2h 15min</div>
-            </div>
-            
-            <!-- Sección de Ofertas -->
-            <div class="offers-section">
-                <div class="offer-card">
-                    <div class="offer-header">
-                        <div class="offer-title">Pass Royale</div>
-                        <div class="offer-badge">NUEVO</div>
-                    </div>
-                    <div class="offer-description">
-                        Desbloquea recompensas exclusivas y contenido premium para tu aventura matemática.
-                    </div>
-                    <div class="offer-items">
-                        <div class="offer-item">
-                            <div class="item-icon">⭐</div>
-                            <div class="item-value">x2</div>
-                        </div>
-                        <div class="offer-item">
-                            <div class="item-icon">🔢</div>
-                            <div class="item-value">x9</div>
-                        </div>
-                        <div class="offer-item">
-                            <div class="item-icon">🧠</div>
-                            <div class="item-value">x25</div>
-                        </div>
-                    </div>
-                    <div class="offer-price">58.900,00</div>
-                    <button class="offer-button">COMPRAR AHORA</button>
-                </div>
-                
-                <div class="offer-card">
-                    <div class="offer-header">
-                        <div class="offer-title">Bebé Dragón</div>
-                        <div class="offer-badge">EVOLUCIÓN</div>
-                    </div>
-                    <div class="offer-description">
-                        Desbloquea al Bebé Dragón para obtener ventajas especiales en tus batallas matemáticas.
-                    </div>
-                    <div class="offer-items">
-                        <div class="offer-item">
-                            <div class="item-icon">🔥</div>
-                            <div class="item-value">x90</div>
-                        </div>
-                        <div class="offer-item">
-                            <div class="item-icon">⚡</div>
-                            <div class="item-value">x270</div>
-                        </div>
-                        <div class="offer-item">
-                            <div class="item-icon">💎</div>
-                            <div class="item-value">x125</div>
-                        </div>
-                    </div>
-                    <div class="offer-price">32.500,00</div>
-                    <button class="offer-button">COMPRAR AHORA</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Footer/Navegación -->
-        <div class="footer">
-            <div class="footer-item active" data-tab="decks">
-                <div class="footer-icon">🎴</div>
-                <div class="footer-label">Mazos</div>
-            </div>
-            <div class="footer-item" data-tab="collection">
-                <div class="footer-icon">📚</div>
-                <div class="footer-label">Colección</div>
-            </div>
-            <div class="footer-item" data-tab="battle">
-                <div class="footer-icon">⚔️</div>
-                <div class="footer-label">Batalla</div>
-            </div>
-            <div class="footer-item" data-tab="offers">
-                <div class="footer-icon">🛒</div>
-                <div class="footer-label">Ofertas</div>
-            </div>
-        </div>
-    </div>
 
-    <script>
-        // Configuración inicial
-        document.addEventListener('DOMContentLoaded', function() {
-            // Inicializar partículas
-            initParticles();
-            
-            // Configurar eventos de pestañas
-            setupTabs();
-            
-            // Configurar eventos del footer
-            setupFooter();
-        });
+<h1>🎮 MindMath</h1>
 
-        // Inicializar partículas de fondo
-        function initParticles() {
-            const particlesContainer = document.getElementById('particles');
-            const particleCount = 30;
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                
-                // Posición aleatoria
-                const left = Math.random() * 100;
-                const top = Math.random() * 100;
-                const size = Math.random() * 3 + 1;
-                const opacity = Math.random() * 0.5 + 0.1;
-                const animationDuration = Math.random() * 20 + 10;
-                const animationDelay = Math.random() * 5;
-                
-                particle.style.left = `${left}%`;
-                particle.style.top = `${top}%`;
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                particle.style.opacity = opacity;
-                particle.style.animation = `float ${animationDuration}s ease-in-out ${animationDelay}s infinite`;
-                
-                particlesContainer.appendChild(particle);
-            }
-        }
+<div id="menu">
+  <button onclick="selectLevel('facil',90,5)">🌱 Fácil (90s)</button>
+  <button onclick="selectLevel('intermedio',70,4)">🚀 Intermedio (70s)</button>
+  <button onclick="selectLevel('dificil',50,3)">🔥 Difícil (50s)</button>
+  <button onclick="selectLevel('extremo',30,2)">💀 Extremo (30s)</button>
+</div>
 
-        // Configurar eventos de pestañas
-        function setupTabs() {
-            const tabs = document.querySelectorAll('.tab');
-            
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabId = this.getAttribute('data-tab');
-                    
-                    // Remover clase activa de todas las pestañas
-                    tabs.forEach(t => t.classList.remove('active'));
-                    
-                    // Añadir clase activa a la pestaña clickeada
-                    this.classList.add('active');
-                    
-                    // Ocultar todas las secciones
-                    document.querySelectorAll('.active-section').forEach(section => {
-                        section.classList.remove('active-section');
-                    });
-                    
-                    // Mostrar la sección correspondiente
-                    document.querySelector(`.${tabId}-section`).classList.add('active-section');
-                });
-            });
-        }
+<div id="game" class="hidden">
+  <h2 id="levelTxt"></h2>
+  <p id="points">🏆 Puntos: 0</p>
+  <p id="lives">❤️ Vidas: 3</p>
+  <p id="time">⏱️ 60s</p>
 
-        // Configurar eventos del footer
-        function setupFooter() {
-            const footerItems = document.querySelectorAll('.footer-item');
-            
-            footerItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    const tabId = this.getAttribute('data-tab');
-                    
-                    // Remover clase activa de todos los items del footer
-                    footerItems.forEach(i => i.classList.remove('active'));
-                    
-                    // Añadir clase activa al item clickeado
-                    this.classList.add('active');
-                    
-                    // Remover clase activa de todas las pestañas
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    
-                    // Añadir clase activa a la pestaña correspondiente
-                    document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
-                    
-                    // Ocultar todas las secciones
-                    document.querySelectorAll('.active-section').forEach(section => {
-                        section.classList.remove('active-section');
-                    });
-                    
-                    // Mostrar la sección correspondiente
-                    document.querySelector(`.${tabId}-section`).classList.add('active-section');
-                });
-            });
-        }
-    </script>
+  <h2 id="question"></h2>
+  <input id="answer" placeholder="Tu respuesta" />
+  <button onclick="check()">✅ Enviar</button>
+  <button style="background:#9E9E9E" onclick="restartMenu()">🏠 Menú</button>
+</div>
+
+<script>
+let puntos=0, vidas=3, tiempo=60, respuestaCorrecta, timer, nivel="facil";
+
+function selectLevel(niv,t,v){
+  nivel=niv; puntos=0; vidas=v; tiempo=t;
+  document.getElementById("menu").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+  document.getElementById("levelTxt").innerText="Nivel: "+nivel;
+  startGame();
+}
+
+function startGame(){
+  generarPregunta();
+  timer=setInterval(()=>{
+    tiempo--;
+    document.getElementById("time").innerText="⏱️ "+tiempo+"s";
+    if(tiempo<=0) fin();
+  },1000);
+}
+
+function generarPregunta(){
+  let ops = (nivel=="dificil"||nivel=="extremo")?["+", "-", "×", "÷", "√"]:["+", "-", "×"];
+  let op = ops[Math.floor(Math.random()*ops.length)];
+  let n1=Math.floor(Math.random()*20)+1, n2=Math.floor(Math.random()*20)+1;
+  switch(op){
+    case "+": respuestaCorrecta=n1+n2; break;
+    case "-": respuestaCorrecta=n1-n2; break;
+    case "×": n1=Math.floor(Math.random()*10)+2; n2=Math.floor(Math.random()*10)+2; respuestaCorrecta=n1*n2; break;
+    case "÷": n2=Math.floor(Math.random()*9)+2; let coc=Math.floor(Math.random()*9)+2; n1=n2*coc; respuestaCorrecta=coc; break;
+    case "√": n1=Math.floor(Math.random()*11)+2; respuestaCorrecta=n1; n2=n1*n1; op="√"+n2; document.getElementById("question").innerText="√"+n2; return;
+  }
+  document.getElementById("question").innerText = n1+" "+op+" "+n2;
+}
+
+function check(){
+  let val=parseInt(document.getElementById("answer").value);
+  document.getElementById("answer").value="";
+  if(val==respuestaCorrecta){ puntos+=10; }
+  else { vidas--; if(vidas<=0) return fin(); }
+  document.getElementById("points").innerText="🏆 Puntos: "+puntos;
+  document.getElementById("lives").innerText="❤️ Vidas: "+vidas;
+  generarPregunta();
+}
+
+function fin(){
+  clearInterval(timer);
+  alert("🎯 Fin del juego\nPuntos: "+puntos);
+  restartMenu();
+}
+
+function restartMenu(){
+  clearInterval(timer);
+  document.getElementById("menu").classList.remove("hidden");
+  document.getElementById("game").classList.add("hidden");
+}
+</script>
+
 </body>
 </html>
